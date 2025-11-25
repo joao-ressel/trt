@@ -112,7 +112,7 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
       target_account_id: data.target_account_id,
     };
 
-    const result = await createTransaction(payload, data.account_id);
+    const result = await createTransaction(payload, payload.account_id);
 
     if (result.success) {
       console.log("Success:", result.message);
