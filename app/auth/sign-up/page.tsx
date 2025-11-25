@@ -1,5 +1,5 @@
+import { SignUpForm } from "@/components/auth-components/sign-up-form";
 import BackgroundAnimation from "@/components/background-animation";
-import { SignUpForm } from "@/components/sign-up-form";
 
 export default function Page() {
   return (

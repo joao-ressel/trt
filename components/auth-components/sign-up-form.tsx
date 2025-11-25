@@ -1,16 +1,20 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
+import { GoogleLogoIcon } from "@phosphor-icons/react";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
+import { LoadingSpin } from "./loading-spin";
+
+import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { GoogleLogoIcon } from "@phosphor-icons/react";
-import { LoadingSpin } from "./loading-spin";
+import Link from "next/link";
 
 export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<"div">) {
   const [email, setEmail] = useState("");
@@ -35,11 +39,14 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            fullName: fullName,
+          },
         },
       });
       if (error) throw error;
@@ -156,7 +163,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
               </Button>
             </div>
             <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
+              Already have an account?
               <Link href="/auth/login" className="underline underline-offset-4">
                 Login
               </Link>
