@@ -12,10 +12,18 @@ import { CurrentUserAvatar } from "./current-user-avatar";
 import { LogOut } from "lucide-react";
 import { useCurrentUserName } from "@/hooks/use-current-user-name";
 import { useCurrentUserEmail } from "@/hooks/use-current-user-email";
+import { Button } from "./ui/button";
+import { createClient } from "@/lib/supabase/client";
 
 export function NavUser() {
   const userName = useCurrentUserName();
   const userEmail = useCurrentUserEmail();
+  const supabase = createClient();
+
+  const logOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/auth/login";
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -41,8 +49,10 @@ export function NavUser() {
 
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <LogOut />
-          Log out
+          <Button onClick={logOut}>
+            <LogOut />
+            Log out
+          </Button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
