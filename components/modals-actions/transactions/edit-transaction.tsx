@@ -12,7 +12,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -39,15 +38,17 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import * as z from "zod";
-import { Transaction, TransactionType } from "@/types/transactions";
-import { TransactionPayload, updateTransaction } from "@/lib/supabase/actions/transactions-actions";
+import { Transaction, TransactionPayload, TransactionType } from "@/types/transactions";
+import { updateTransaction } from "@/lib/supabase/actions/transactions-actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Account } from "@/types/accounts";
 import { Category } from "@/types/categories";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
+import { handleActionToast } from "@/lib/utils";
+
 type TransactionEditFormValues = z.infer<typeof transactionEditSchema>;
 
 interface AddTransactionFormProps {
@@ -57,36 +58,45 @@ interface AddTransactionFormProps {
   onActionSuccess: () => void;
 }
 
-const transactionEditSchema = z.object({
-  title: z.string().min(2, "The title must have at least 2 characters."),
-  amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid value format. Use periods for decimals."),
-  type: z.enum(["income", "expense", "transfer"]),
-  transaction_date: z.date(),
-  account_id: z.string(),
-  category_id: z.string().optional(),
-  target_account_id: z.string().optional().nullable(),
-});
+const transactionEditSchema = z
+  .object({
+    title: z.string().optional(),
+    amount: z.string().regex(/^\d+(?:[.,]\d{1,2})?$/, "Invalid value format."),
+    type: z.enum(["income", "expense", "transfer"]),
+    transaction_date: z.date(),
+    account_id: z.string(),
+    category_id: z.string().optional(),
+    target_account_id: z.string().optional().nullable(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type !== "transfer") {
+      if (!data.title || data.title.trim().length < 2) {
+        ctx.addIssue({
+          code: "custom",
+          message: "The title is required for 'income' or 'expense' transactions.",
+          path: ["title"],
+        });
+      }
+    }
+  });
 
-export function EditTransaction({
-  transaction,
-  accounts,
-  categories,
-  onActionSuccess,
-}: AddTransactionFormProps) {
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+export function EditTransaction({ transaction, accounts, categories }: AddTransactionFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm<TransactionEditFormValues>({
     resolver: zodResolver(transactionEditSchema),
     defaultValues: {
       type: transaction.type,
       title: transaction.title,
-      transaction_date: new Date(transaction.transaction_date),
+      transaction_date: parseISO(transaction.transaction_date),
       account_id: transaction.account_id,
       amount: String(transaction.amount),
       category_id: transaction.category_id,
       target_account_id: transaction.target_account_id,
     },
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   const handleEdit = async (values: TransactionEditFormValues) => {
@@ -95,26 +105,20 @@ export function EditTransaction({
     const payload: Partial<TransactionPayload> = {
       type: values.type,
       title: values.title,
-      transaction_date: values.transaction_date,
+      transaction_date: format(values.transaction_date, "yyyy-MM-dd"),
       account_id: values.account_id,
       amount: Number(values.amount),
       category_id: values.category_id,
       target_account_id: values.target_account_id,
     };
 
-    const result = await updateTransaction(
-      transaction.id.toString(),
-      transaction.account_id.toString(),
-      payload
+    await handleActionToast(
+      updateTransaction(transaction.id.toString(), transaction.account_id.toString(), payload),
+      {
+        form,
+        closeModal: () => setIsOpen(false),
+      }
     );
-
-    if (result.success) {
-      setIsEditDialogOpen(false);
-      onActionSuccess();
-    } else {
-      console.error("Update failed:", result.message);
-    }
-    setIsLoading(false);
   };
 
   const [currentType, setCurrentType] = useState<TransactionType>(transaction.type);
@@ -124,7 +128,7 @@ export function EditTransaction({
   const incomeCategories = (categories || []).filter((c) => c.type === "income");
 
   return (
-    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" title="Edit Transaction">
           <Pencil className="h-4 w-4 text-secondary-foreground hover:text-secondary" />
@@ -190,19 +194,21 @@ export function EditTransaction({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormLabel>Description/Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Lunch, Salary" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {currentType !== "transfer" && (
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Lunch, Salary" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
@@ -243,10 +249,16 @@ export function EditTransaction({
               name="account_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    {transaction.type === "expense" ? "Destination Account" : "Source Account"}
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>{currentType === "expense" ? "Source Account" : "Account"}</FormLabel>
+                  <Select
+                    onValueChange={(val) => {
+                      field.onChange(val);
+                      if (currentType === "transfer") {
+                        form.setValue("target_account_id", undefined);
+                      }
+                    }}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select an account" />
@@ -271,8 +283,8 @@ export function EditTransaction({
                 name="category_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Categoria</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel>Category</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a Category" />
@@ -303,7 +315,7 @@ export function EditTransaction({
                     <FormLabel>Destination Account</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select an account" />
                         </SelectTrigger>
                       </FormControl>

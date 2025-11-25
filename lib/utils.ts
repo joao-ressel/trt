@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { toast } from "sonner";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -15,12 +16,6 @@ export function formatCurrencyToNumber(value: string): number {
   return isNaN(numericValue) ? 0 : numericValue;
 }
 
-/**
- * Formats a number into a currency string with two decimal places.
- * This is primarily used for displaying monetary values.
- * * @param value The number to format (e.g., 1234.56).
- * @returns The formatted string (e.g., "1,234.56").
- */
 export function formatNumberToCurrency(value: number): string {
   if (value === null || value === undefined) return "0.00";
 
@@ -30,4 +25,47 @@ export function formatNumberToCurrency(value: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
+}
+
+interface HandleActionToastOptions<T> {
+  form?: { reset: () => void };
+  closeModal?: () => void;
+  messages?: {
+    loading?: string;
+    success?: string;
+    error?: string;
+  };
+}
+
+export async function handleActionToast<T extends { success?: boolean; message?: string }>(
+  action: Promise<T>,
+  options?: HandleActionToastOptions<T>
+): Promise<T> {
+  const defaultMessages = {
+    loading: "Processing action...",
+    success: "Your action was successful.",
+    error: "Your action failed.",
+  };
+
+  const { form, closeModal, messages = {} } = options || {};
+  const merged = { ...defaultMessages, ...messages };
+
+  const toastId = toast.loading(merged.loading);
+
+  try {
+    const result = await action;
+
+    if (result.success) {
+      toast.success(result.message ?? merged.success, { id: toastId });
+      form?.reset();
+      closeModal?.();
+    } else {
+      toast.error(result.message ?? merged.error, { id: toastId });
+    }
+
+    return result;
+  } catch (error: any) {
+    toast.error(error?.message ?? merged.error, { id: toastId });
+    return error;
+  }
 }

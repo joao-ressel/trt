@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { createTransaction, TransactionPayload } from "@/lib/supabase/actions/transactions-actions";
+import { createTransaction } from "@/lib/supabase/actions/transactions-actions";
 
 import {
   Dialog,
@@ -47,14 +47,14 @@ import {
 } from "../../ui/dialog";
 import { Account } from "@/types/accounts";
 import { Category } from "@/types/categories";
-import { TransactionType } from "@/types/transactions";
+import { TransactionPayload, TransactionType } from "@/types/transactions";
+import { handleActionToast } from "@/lib/utils";
 
 const FormSchema = z
   .object({
-    title: z.string().min(2, "The title must have at least 2 characters.").optional(),
-    amount: z
-      .string()
-      .regex(/^\d+(\.\d{1,2})?$/, "Invalid value format. Use periods for decimals."),
+    title: z.string().optional(),
+
+    amount: z.string().regex(/^\d+(?:[.,]\d{1,2})?$/, "Invalid value format."),
     type: z.enum(["income", "expense", "transfer"]),
     transaction_date: z.date(),
     account_id: z.string(),
@@ -62,12 +62,14 @@ const FormSchema = z
     target_account_id: z.string().optional().nullable(),
   })
   .superRefine((data, ctx) => {
-    if (data.type !== "transfer" && (!data.title || data.title.length < 2)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "The title is required for 'income' or 'expense' transactions.",
-        path: ["title"],
-      });
+    if (data.type !== "transfer") {
+      if (!data.title || data.title.trim().length < 2) {
+        ctx.addIssue({
+          code: "custom",
+          message: "The title is required for 'income' or 'expense' transactions.",
+          path: ["title"],
+        });
+      }
     }
   });
 
@@ -92,6 +94,8 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
       category_id: undefined,
       target_account_id: undefined,
     },
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   async function onSubmit(data: TransactionFormValues) {
@@ -106,22 +110,16 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
       title: data.title,
       amount: amountFloat,
       type: data.type,
-      transaction_date: data.transaction_date,
+      transaction_date: format(data.transaction_date, "yyyy-MM-dd"),
       account_id: data.account_id,
       category_id: data.category_id,
       target_account_id: data.target_account_id,
     };
 
-    const result = await createTransaction(payload, payload.account_id);
-
-    if (result.success) {
-      console.log("Success:", result.message);
-      setIsOpen(false);
-      form.reset();
-    } else {
-      console.error("Failure in Creation:", result.message);
-      alert(`Err: ${result.message}`);
-    }
+    await handleActionToast(createTransaction(payload, payload.account_id), {
+      form,
+      closeModal: () => setIsOpen(false),
+    });
   }
 
   form.watch("type");
@@ -199,7 +197,7 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
                   name="title"
                   render={({ field }) => (
                     <FormItem className="flex-1">
-                      <FormLabel>Description/Title</FormLabel>
+                      <FormLabel>Title</FormLabel>
                       <FormControl>
                         <Input placeholder="Ex: Lunch, Salary" {...field} />
                       </FormControl>
@@ -208,6 +206,7 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
                   )}
                 />
               )}
+
               <FormField
                 control={form.control}
                 name="transaction_date"
@@ -253,7 +252,15 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
                     <FormLabel>
                       {currentType === "expense" ? "Source Account" : "Account"}
                     </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={(val) => {
+                        field.onChange(val);
+                        if (currentType === "transfer") {
+                          form.setValue("target_account_id", undefined);
+                        }
+                      }}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select an account" />

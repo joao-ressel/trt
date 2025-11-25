@@ -27,3 +27,13 @@ export interface Transaction {
   created_at: string;
   user_id: string;
 }
+
+export interface TransactionPayload {
+  title?: string;
+  amount: number;
+  type: TransactionType;
+  transaction_date: string;
+  account_id: string;
+  category_id?: string | null;
+  target_account_id?: string | null;
+}
