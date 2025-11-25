@@ -12,31 +12,23 @@ import {
 } from "@/components/ui/dialog";
 
 import { deleteAccount } from "@/lib/supabase/actions/accounts-actions";
+import { handleActionToast } from "@/lib/utils";
 import { Account } from "@/types/accounts";
 
 import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-interface AccountActionsProps {
-  account: Account;
-  onActionSuccess: () => void;
-}
-
-export function DeleteAccount({ account, onActionSuccess }: AccountActionsProps) {
+export function DeleteAccount(account: Account) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDelete = async () => {
     setIsLoading(true);
-    const result = await deleteAccount(account.id.toString());
+    const result = await account.id.toString();
 
-    if (result.success) {
-      setIsDeleteDialogOpen(false);
-      onActionSuccess();
-    } else {
-      console.error("Deletion failed:", result.message);
-    }
-    setIsLoading(false);
+    await handleActionToast(deleteAccount(account.id.toString()), {
+      closeModal: () => setIsDeleteDialogOpen(false),
+    });
   };
   return (
     <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

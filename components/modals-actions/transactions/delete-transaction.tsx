@@ -10,6 +10,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { deleteTransaction } from "@/lib/supabase/actions/transactions-actions";
+import { handleActionToast } from "@/lib/utils";
 import { Transaction } from "@/types/transactions";
 import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -22,7 +23,7 @@ interface TransactionActionsProps {
 
 export function DeleteTransaction({
   transaction,
-  onActionSuccess,
+
   account,
 }: TransactionActionsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -30,15 +31,9 @@ export function DeleteTransaction({
 
   const handleDelete = async () => {
     setIsLoading(true);
-    const result = await deleteTransaction(transaction.id.toString(), account);
-
-    if (result.success) {
-      setIsDeleteDialogOpen(false);
-      onActionSuccess();
-    } else {
-      console.error("Deletion failed:", result.message);
-    }
-    setIsLoading(false);
+    await handleActionToast(deleteTransaction(transaction.id.toString(), account), {
+      closeModal: () => setIsDeleteDialogOpen(false),
+    });
   };
   return (
     <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

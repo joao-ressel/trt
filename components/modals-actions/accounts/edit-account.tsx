@@ -28,13 +28,14 @@ import { Pencil, Loader2, Save } from "lucide-react";
 import { useState } from "react";
 import * as z from "zod";
 import {} from "@/types/transactions";
-import { formatCurrencyToNumber } from "@/lib/utils";
-import { AccountPayload, updateAccount } from "@/lib/supabase/actions/accounts-actions";
+import { formatCurrencyToNumber, handleActionToast } from "@/lib/utils";
+import { updateAccount } from "@/lib/supabase/actions/accounts-actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Account,
   ACCOUNT_TYPES,
+  AccountPayload,
   AccountType,
   CURRENCY_TYPES,
   CurrencyType,
@@ -49,6 +50,7 @@ interface AccountActionsProps {
 
 const accountEditSchema = z.object({
   name: z.string().min(2, "Name must have at least 2 characters."),
+  description: z.string().optional(),
   type: z.enum(ACCOUNT_TYPES.map((t) => t.value) as [string, ...string[]]),
   currency: z.enum(CURRENCY_TYPES.map((t) => t.value) as [string, ...string[]]),
   current_balance: z
@@ -68,6 +70,7 @@ export function EditAccount({ account, onActionSuccess }: AccountActionsProps) {
     defaultValues: {
       name: account.name,
       type: account.type,
+      description: account.description,
       currency: account.currency,
       current_balance: String(account.current_balance),
       color: account.color,
@@ -81,21 +84,17 @@ export function EditAccount({ account, onActionSuccess }: AccountActionsProps) {
 
     const payload: Partial<AccountPayload> = {
       name: values.name,
+      description: values.description,
       type: values.type as AccountType,
       currency: values.currency as CurrencyType,
       color: values.color,
       current_balance: currentBalanceNumber,
     };
 
-    const result = await updateAccount(account.id.toString(), payload);
-
-    if (result.success) {
-      setIsEditDialogOpen(false);
-      onActionSuccess();
-    } else {
-      console.error("Update failed:", result.message);
-    }
-    setIsLoading(false);
+    await handleActionToast(updateAccount(account.id.toString(), payload), {
+      form,
+      closeModal: () => setIsEditDialogOpen(false),
+    });
   };
 
   return (
@@ -124,6 +123,19 @@ export function EditAccount({ account, onActionSuccess }: AccountActionsProps) {
                   <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: C6 Account, Nubank Savings" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: CDI Investment" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

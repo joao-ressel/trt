@@ -35,9 +35,11 @@ import {
 } from "../../ui/dialog";
 import { ACCOUNT_TYPES, AccountType, CURRENCY_TYPES, CurrencyType } from "@/types/accounts";
 import { useState } from "react";
+import { handleActionToast } from "@/lib/utils";
 
 const FormSchema = z.object({
   name: z.string().min(2, "The account name must be at least 2 characters long."),
+  description: z.string().optional(),
   inicial_balance: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid initial value format."),
   type: z.enum(ACCOUNT_TYPES.map((t) => t.value) as [AccountType, ...AccountType[]]),
   last_balance_update_at: z.date(),
@@ -53,7 +55,8 @@ export default function AddAccountForm() {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       name: "",
-      inicial_balance: "0.00",
+      description: "",
+      inicial_balance: "",
       last_balance_update_at: new Date(),
       currency: "BRL",
       type: "default",
@@ -69,19 +72,17 @@ export default function AddAccountForm() {
       name: data.name,
       inicial_balance: amountFloat,
       current_balance: amountFloat,
+      description: data.description,
       last_balance_update_at: new Date(),
       currency: data.currency,
       type: data.type,
       color: data.color,
     };
 
-    const result = await createAccount(payload);
-
-    if (result.success) {
-      form.reset();
-    } else {
-      alert(`Error creating account: ${result.message}`);
-    }
+    await handleActionToast(createAccount(payload), {
+      form,
+      closeModal: () => setIsOpen(false),
+    });
   }
 
   return (
@@ -107,6 +108,19 @@ export default function AddAccountForm() {
                     <FormLabel>Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: C6 Account, Nubank Savings" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: CDI Investment" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

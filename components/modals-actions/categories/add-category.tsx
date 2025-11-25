@@ -35,6 +35,7 @@ import {
 
 import { createCategory } from "@/lib/supabase/actions/categories-actions";
 import { ICON_OPTIONS } from "@/types/categories";
+import { handleActionToast } from "@/lib/utils";
 
 const FormSchema = z.object({
   name: z.string().min(2, "The category name must be at least 2 characters long."),
@@ -58,30 +59,17 @@ export default function AddCategoryForm() {
   });
 
   async function onSubmit(data: CategoryFormValues) {
-    console.log("Submit Iniciado. Dados:", data);
+    const payload = {
+      name: data.name,
+      type: data.type,
+      color: data.color,
+      icon: data.icon,
+    };
 
-    try {
-      const payload = {
-        name: data.name,
-        type: data.type,
-        color: data.color,
-        icon: data.icon,
-      };
-
-      const result = await createCategory(payload);
-      console.log("Server Action Result:", result);
-
-      if (result && result.success) {
-        form.reset();
-        setIsOpen(false);
-      } else {
-        console.error(
-          `Error creating category: ${result ? result.message : "Undefined error response."}`
-        );
-      }
-    } catch (error) {
-      console.error("Fatal error during submit:", error);
-    }
+    await handleActionToast(createCategory(payload), {
+      form,
+      closeModal: () => setIsOpen(false),
+    });
   }
 
   return (

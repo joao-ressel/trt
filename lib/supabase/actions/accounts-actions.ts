@@ -2,18 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath, unstable_noStore } from "next/cache";
-import { AccountType } from "@/types/accounts";
-import { DbTransaction } from "@/types/transactions";
-
-export interface AccountPayload {
-  name: string;
-  inicial_balance: number | undefined;
-  current_balance: number;
-  last_balance_update_at: Date;
-  currency: string;
-  type: AccountType;
-  color: string;
-}
+import { AccountPayload } from "@/types/accounts";
 
 export async function createAccount(formData: AccountPayload) {
   const supabase = await createClient();
@@ -22,6 +11,7 @@ export async function createAccount(formData: AccountPayload) {
     name: formData.name,
     initial_balance: String(formData.inicial_balance),
     current_balance: String(formData.current_balance),
+    description: formData.description,
     last_balance_update_at: formData.last_balance_update_at.toISOString().split("T")[0],
     type: formData.type,
     color: formData.color,
@@ -29,7 +19,7 @@ export async function createAccount(formData: AccountPayload) {
   });
 
   if (error) {
-    console.error("Erro ao inserir conta:", error);
+    console.error("Error adding account:", error);
     return { success: false, message: error.message };
   }
 
@@ -44,6 +34,7 @@ export async function updateAccount(accountId: string, formData: Partial<Account
   const updatedFields: { [key: string]: any } = {};
 
   if (formData.name !== undefined) updatedFields.name = formData.name;
+  if (formData.description !== undefined) updatedFields.description = formData.description;
   if (formData.currency !== undefined) updatedFields.currency = formData.currency;
   if (formData.type !== undefined) updatedFields.type = formData.type;
   if (formData.color !== undefined) updatedFields.color = formData.color;
@@ -57,13 +48,13 @@ export async function updateAccount(accountId: string, formData: Partial<Account
   const { error } = await supabase.from("accounts").update(updatedFields).eq("id", accountId);
 
   if (error) {
-    console.error("Erro ao atualizar conta:", error);
+    console.error("Error updating account:", error);
     return { success: false, message: error.message };
   }
 
   revalidatePath("/");
 
-  return { success: true, message: "Conta atualizada com sucesso!" };
+  return { success: true, message: "Account successfully updated!" };
 }
 
 export async function deleteAccount(accountId: string) {
@@ -93,7 +84,7 @@ export async function calculateAccountBalance(accountId: string) {
     .single();
 
   if (accError || !account) {
-    console.error("Erro ao buscar conta:", accError);
+    console.error("Error fetching account:", accError);
     return null;
   }
 
@@ -106,7 +97,7 @@ export async function calculateAccountBalance(accountId: string) {
     .order("created_at", { ascending: true });
 
   if (txError) {
-    console.error("Erro ao buscar transações:", txError);
+    console.error("Error fetching transactions:", txError);
     return null;
   }
 
@@ -138,7 +129,7 @@ export async function calculateAccountBalance(accountId: string) {
     .eq("id", accountId);
 
   if (updateError) {
-    console.error("Erro ao atualizar saldo:", updateError);
+    console.error("Error updating balance:", updateError);
   }
 
   return finalBalance;

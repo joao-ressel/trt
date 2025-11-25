@@ -16,6 +16,7 @@ import {
 
 import { Category } from "@/types/categories";
 import { useState } from "react";
+import { handleActionToast } from "@/lib/utils";
 
 interface CategoryActionsProps {
   category: Category;
@@ -28,15 +29,10 @@ export function DeleteCategory({ category, onActionSuccess }: CategoryActionsPro
 
   const handleDelete = async () => {
     setIsLoading(true);
-    const result = await deleteCategory(category.id.toString());
 
-    if (result.success) {
-      setIsDeleteDialogOpen(false);
-      onActionSuccess();
-    } else {
-      console.error("Deletion failed:", result.message);
-    }
-    setIsLoading(false);
+    await handleActionToast(deleteCategory(category.id.toString()), {
+      closeModal: () => setIsDeleteDialogOpen(false),
+    });
   };
 
   return (

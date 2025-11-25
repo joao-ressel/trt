@@ -32,6 +32,7 @@ import { Category, CategoryType, ICON_OPTIONS } from "@/types/categories";
 import { CategoryPayload, updateCategory } from "@/lib/supabase/actions/categories-actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { handleActionToast } from "@/lib/utils";
 
 type CategoryEditFormValues = z.infer<typeof categoryEditSchema>;
 
@@ -70,15 +71,10 @@ export function EditCategory({ category, onActionSuccess }: CategoryActionsProps
       icon: values.icon,
     };
 
-    const result = await updateCategory(category.id.toString(), payload);
-
-    if (result.success) {
-      setIsEditDialogOpen(false);
-      onActionSuccess();
-    } else {
-      console.error("Update failed:", result.message);
-    }
-    setIsLoading(false);
+    await handleActionToast(updateCategory(category.id.toString(), payload), {
+      form,
+      closeModal: () => setIsEditDialogOpen(false),
+    });
   };
 
   return (
