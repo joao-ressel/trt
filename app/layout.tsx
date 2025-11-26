@@ -6,9 +6,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <html lang="en" suppressHydrationWarning>
-        <head />
+        <head>
+          <link rel="manifest" href="/manifest.json" />
+        </head>
         <body className="antialiased bg-background text-foreground">
           <LayoutWrapper>{children}</LayoutWrapper>
+
           <Toaster />
         </body>
       </html>

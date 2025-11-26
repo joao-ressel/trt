@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NavUser } from "@/components/nav-user";
 import React from "react";
+import InstallPWA from "@/components/install-pwa";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -27,6 +28,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
             <div className="flex justify-between px-6 h-20 bg-background items-center border-b">
               <div className="h-12 w-28 bg-foreground mask-[url('/name-logo.svg')] mask-cover"></div>
               <div className="flex gap-2">
+                <InstallPWA />
                 <ModeToggle />
                 <NavUser />
               </div>

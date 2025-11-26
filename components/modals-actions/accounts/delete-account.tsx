@@ -18,13 +18,16 @@ import { Account } from "@/types/accounts";
 import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-export function DeleteAccount(account: Account) {
+interface AccountActionsProps {
+  account: Account;
+  onActionSuccess: () => void;
+}
+export function DeleteAccount({ account, onActionSuccess }: AccountActionsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDelete = async () => {
     setIsLoading(true);
-    const result = await account.id.toString();
 
     await handleActionToast(deleteAccount(account.id.toString()), {
       closeModal: () => setIsDeleteDialogOpen(false),

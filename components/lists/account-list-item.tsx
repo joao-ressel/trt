@@ -1,8 +1,8 @@
 "use client";
 
-import AccountActions from "../buttons-actions/account-actions";
 import { useRouter } from "next/navigation";
 import { Account } from "@/types/accounts";
+import AccountActions from "../buttons-actions/account-actions";
 
 interface AccountListItemProps {
   account: Account;
