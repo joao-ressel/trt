@@ -1,18 +1,30 @@
 import type { NextConfig } from "next";
-const isProd = process.env.NODE_ENV === "development";
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
+import type { Configuration } from "webpack";
 
 const withPWA = require("next-pwa")({
   dest: "public",
   register: true,
   skipWaiting: true,
-  disable: !isProd,
+  disable: process.env.NODE_ENV === "development",
 });
 
-module.exports = withPWA({
-  reactStrictMode: true,
-});
+interface NextWebpackOptions {
+  isServer: boolean;
+  dev: boolean;
+  dir: string;
+  config: Record<string, any>;
+  webpack: Record<string, any>;
+  defaultLoaders: Record<string, any>;
+}
+
+const nextConfig: NextConfig = {
+  webpack(config: Configuration, options: NextWebpackOptions): Configuration {
+    if (options.dev) {
+      console.log("Next.js PWA: Usando Webpack em modo de desenvolvimento.");
+    }
+
+    return config;
+  },
+};
+
+module.exports = withPWA(nextConfig);
