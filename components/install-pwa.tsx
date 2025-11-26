@@ -13,6 +13,7 @@ export const InstallPWA = () => {
   const [showInstallButton, setShowInstallButton] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log("Evento beforeinstallprompt disparado!");
     const handler = (e: any) => {
       if (e && e.prompt) {
         e.preventDefault();
