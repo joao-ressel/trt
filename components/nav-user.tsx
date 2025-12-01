@@ -49,7 +49,7 @@ export function NavUser() {
 
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <Button onClick={logOut}>
+          <Button variant="ghost" onClick={logOut}>
             <LogOut />
             Log out
           </Button>

@@ -2,17 +2,17 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath, unstable_noStore } from "next/cache";
-import { AccountPayload } from "@/types/accounts";
+import { DbAccount, InsertAccount } from "@/types/accounts";
 
-export async function createAccount(formData: AccountPayload) {
+export async function createAccount(formData: InsertAccount) {
   const supabase = await createClient();
 
   const { error } = await supabase.from("accounts").insert({
     name: formData.name,
-    initial_balance: String(formData.inicial_balance),
-    current_balance: String(formData.current_balance),
+    initial_balance: formData.initial_balance,
+    current_balance: formData.current_balance,
     description: formData.description,
-    last_balance_update_at: formData.last_balance_update_at.toISOString().split("T")[0],
+    last_balance_update_at: formData.last_balance_update_at?.toString().split("T")[0],
     type: formData.type,
     color: formData.color,
     user_id: (await supabase.auth.getUser()).data.user?.id || "default-user-id",
@@ -28,7 +28,7 @@ export async function createAccount(formData: AccountPayload) {
   return { success: true, message: "Account successfully created!" };
 }
 
-export async function updateAccount(accountId: string, formData: Partial<AccountPayload>) {
+export async function updateAccount(accountId: number, formData: Partial<DbAccount>) {
   const supabase = await createClient();
 
   const updatedFields: { [key: string]: any } = {};
@@ -39,8 +39,8 @@ export async function updateAccount(accountId: string, formData: Partial<Account
   if (formData.type !== undefined) updatedFields.type = formData.type;
   if (formData.color !== undefined) updatedFields.color = formData.color;
 
-  if (formData.inicial_balance !== undefined)
-    updatedFields.initial_balance = String(formData.inicial_balance);
+  if (formData.initial_balance !== undefined)
+    updatedFields.initial_balance = String(formData.initial_balance);
 
   if (formData.last_balance_update_at !== undefined)
     updatedFields.last_balance_update_at = String(formData.last_balance_update_at);
@@ -57,7 +57,7 @@ export async function updateAccount(accountId: string, formData: Partial<Account
   return { success: true, message: "Account successfully updated!" };
 }
 
-export async function deleteAccount(accountId: string) {
+export async function deleteAccount(accountId: number) {
   console.log("ID recebido:", accountId);
   const supabase = await createClient();
   const { error } = await supabase.from("accounts").delete().eq("id", accountId);
@@ -71,7 +71,7 @@ export async function deleteAccount(accountId: string) {
 
   return { success: true, message: "Account successfully deleted!" };
 }
-export async function calculateAccountBalance(accountId: string) {
+export async function calculateAccountBalance(accountId: number) {
   unstable_noStore();
   if (!accountId) return null;
 
@@ -88,7 +88,7 @@ export async function calculateAccountBalance(accountId: string) {
     return null;
   }
 
-  const initialBalance = Number(account.initial_balance) || 0;
+  const initial_balance = Number(account.initial_balance) || 0;
 
   const { data: transactions, error: txError } = await supabase
     .from("transactions")
@@ -118,12 +118,12 @@ export async function calculateAccountBalance(accountId: string) {
     }
 
     return sum;
-  }, initialBalance);
+  }, initial_balance);
 
   const { error: updateError } = await supabase
     .from("accounts")
     .update({
-      current_balance: finalBalance.toFixed(2),
+      current_balance: Number(finalBalance.toFixed(2)),
       last_balance_update_at: new Date().toISOString(),
     })
     .eq("id", accountId);

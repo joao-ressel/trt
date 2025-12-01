@@ -55,7 +55,7 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(65.996% 0.00008 271.152);
   --secondary-foreground: oklch(43.128% 0.00005 271.152);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
@@ -91,8 +91,8 @@
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(82.032% 0.00009 271.152);
+  --secondary: oklch(34.07% 0.00004 271.152);
+  --secondary-foreground: oklch(78.577% 0.00009 271.152);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
@@ -119,3 +119,16 @@
 
 
 
+select {
+  /* 1. Compatibilidade com Firefox */
+  -moz-appearance: textfield; 
+  /* 2. Propriedade padrão (Embora 'textfield' não seja universal) */
+  appearance: textfield; 
+}
+
+/* 3. A solução principal para navegadores WebKit (Chrome/Edge/Safari) */
+select::-webkit-outer-spin-button,
+select::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Essencial em alguns navegadores para remover o espaço */
+}

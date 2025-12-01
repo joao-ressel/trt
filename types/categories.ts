@@ -1,4 +1,5 @@
-import { TransactionType } from "./transactions";
+import { type Database } from "./supabase.types";
+
 import {
   Utensils,
   HomeIcon,
@@ -21,23 +22,6 @@ import {
   Monitor,
   Pizza,
 } from "lucide-react";
-export interface DbCategory {
-  id: number;
-  created_at: string;
-  user_id: string;
-  name: string;
-  type: string;
-  color: string;
-  icon: string | null;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  type: CategoryType;
-  color: string;
-  icon: string;
-}
 
 export const ICON_OPTIONS = [
   { name: "Utensils", Component: Utensils },
@@ -63,3 +47,6 @@ export const ICON_OPTIONS = [
 ];
 
 export type CategoryType = "income" | "expense";
+
+export type DbCategory = Database["public"]["Tables"]["categories"]["Row"];
+export type InsertCategory = Database["public"]["Tables"]["categories"]["Insert"];

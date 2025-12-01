@@ -1,16 +1,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { InsertCategory } from "@/types/categories";
 import { revalidatePath } from "next/cache";
 
-export interface CategoryPayload {
-  name: string;
-  type: "income" | "expense";
-  color: string;
-  icon: string;
-}
-
-export async function createCategory(formData: CategoryPayload) {
+export async function createCategory(formData: InsertCategory) {
   const supabase = await createClient();
 
   const { error } = await supabase.from("categories").insert({
@@ -31,7 +25,7 @@ export async function createCategory(formData: CategoryPayload) {
   return { success: true, message: "Category created successfully!" };
 }
 
-export async function updateCategory(categoryId: string, formData: Partial<CategoryPayload>) {
+export async function updateCategory(categoryId: number, formData: Partial<InsertCategory>) {
   const supabase = await createClient();
 
   const updatedFields: { [key: string]: any } = {};
@@ -53,7 +47,7 @@ export async function updateCategory(categoryId: string, formData: Partial<Categ
   return { success: true, message: "Category updated successfully!" };
 }
 
-export async function deleteCategory(categoryId: string) {
+export async function deleteCategory(categoryId: number) {
   const supabase = await createClient();
   const { error } = await supabase.from("categories").delete().eq("id", categoryId);
 

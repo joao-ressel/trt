@@ -1,6 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { toast } from "sonner";
+import { LucideIcon } from "lucide-react";
+import { ICON_OPTIONS } from "@/types/categories";
+import { createClient } from "./supabase/server";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -69,3 +72,14 @@ export async function handleActionToast<T extends { success?: boolean; message?:
     return error;
   }
 }
+
+export const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
+
+export const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+});

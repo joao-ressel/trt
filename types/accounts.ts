@@ -1,3 +1,5 @@
+import { type Database } from "./supabase.types";
+
 export type AccountType =
   | "default"
   | "credit_card"
@@ -125,36 +127,5 @@ export const CURRENCY_TYPES: {
   },
 ];
 
-export interface Account {
-  id: string;
-  name: string;
-  description?: string | undefined;
-  inicial_balance: number;
-  type: AccountType;
-  current_balance: number;
-  last_balance_update_at: string;
-  currency: string;
-  color: string;
-}
-export interface DbAccount {
-  id: number;
-  name: string;
-  description?: string | undefined;
-  inicial_balance: number;
-  type: AccountType;
-  last_balance_update_at: string;
-  current_balance: number;
-  currency: string;
-  color: string;
-}
-
-export interface AccountPayload {
-  name: string;
-  inicial_balance: number | undefined;
-  current_balance: number | undefined;
-  description?: string;
-  last_balance_update_at: Date;
-  currency: string;
-  type: AccountType;
-  color: string;
-}
+export type DbAccount = Database["public"]["Tables"]["accounts"]["Row"];
+export type InsertAccount = Database["public"]["Tables"]["accounts"]["Insert"];

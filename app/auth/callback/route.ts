@@ -15,7 +15,7 @@ export async function GET(request: Request) {
 
     if (!error) {
       // redirects the user to the protected page
-      return NextResponse.redirect(`${origin}/dashboard`);
+      return NextResponse.redirect(`${origin}/`);
     }
   }
 
