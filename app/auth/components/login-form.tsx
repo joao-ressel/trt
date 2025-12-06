@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/services/supabase/client";
 
 import { GoogleLogoIcon } from "@phosphor-icons/react";
 

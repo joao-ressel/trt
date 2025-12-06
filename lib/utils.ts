@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { toast } from "sonner";
 import { LucideIcon } from "lucide-react";
 import { ICON_OPTIONS } from "@/types/categories";
-import { createClient } from "./supabase/server";
+import { createClient } from "../services/supabase/server";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -12,18 +12,13 @@ export function cn(...inputs: ClassValue[]) {
 export function formatCurrencyToNumber(value: string): number {
   if (!value) return 0;
 
-  // Use parseFloat, which correctly handles the decimal point '.' used in the input schema (Zod)
   const numericValue = parseFloat(value);
-
-  // Check if the result is a valid number; if not, return 0
   return isNaN(numericValue) ? 0 : numericValue;
 }
 
 export function formatNumberToCurrency(value: number): string {
   if (value === null || value === undefined) return "0.00";
 
-  // Use the locale to ensure proper formatting for display (e.g., with thousands separator)
-  // We use 'en-US' locale for consistency with the currency display format in 'account-list-item.tsx'
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

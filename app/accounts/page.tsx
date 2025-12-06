@@ -1,5 +1,4 @@
-import { calculateAccountBalance } from "@/lib/supabase/actions/accounts-actions";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/services/supabase/server";
 
 import { DbAccount } from "@/types/accounts";
 
@@ -12,6 +11,7 @@ import {
 
 import AccountListItem from "@/app/accounts/components/account-list-item";
 import AddAccountForm from "./components/modals/add-account";
+import { calculateAccountBalance } from "@/services/accounts-actions";
 
 export default async function AccountsPage() {
   const supabase = await createClient();

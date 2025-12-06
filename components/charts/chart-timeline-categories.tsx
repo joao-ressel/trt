@@ -1,80 +1,64 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { buildChartConfig, chartLineData } from "../../services/chart-data";
+import { buildChartConfig } from "../../services/chart-data";
 import { Card, CardDescription, CardTitle } from "../ui/card";
 import { ChartContainer, ChartTooltip } from "../ui/chart";
-import { PropsFilters } from "@/types/global";
+import { FilterTransactionType } from "@/types/global";
 import { CustomTooltipContent } from "./custom/legend-custom";
+import { DbCategory } from "@/types/categories";
 
-export function ChatTimelineCategories({
-  transactions,
+export function ChartTimelineCategories({
+  data,
   categories,
-  selectedPeriod,
   typeSelected,
-}: PropsFilters) {
-  const data = chartLineData({
-    transactions,
-    categories,
-    selectedPeriod,
-    typeSelected,
-  });
-
+}: {
+  data: any[];
+  categories: DbCategory[];
+  typeSelected: FilterTransactionType;
+}) {
   const chartConfig = buildChartConfig(categories);
-
-  let indexCounter = 0; // Inicializa um contador
-  const scatterData = data.flatMap((entry) =>
-    entry.items.map((item) => {
-      const uniqueId = indexCounter++; // Atribui e incrementa
-      return {
-        x: entry.date,
-        y: entry.total,
-        color: chartConfig[item.category_id || ""]?.color ?? "#ccc",
-        amount: item.amount,
-        label: item.label,
-        category_id: item.category_id,
-        __uniqueId: uniqueId, // <-- Adiciona o identificador único
-      };
-    })
-  );
 
   const typeLabel =
     typeSelected === "expense" ? "Expenses" : typeSelected === "income" ? "Income" : "All";
 
   return (
-    <Card className="flex-1 text-center  p-3  bg-card rounded-md border border-border shadow-md justify-center ">
+    <Card className="flex-1 text-center p-3 bg-card rounded-md border border-border shadow-md justify-center ">
       <CardTitle>Timeline {typeLabel}</CardTitle>
       <CardDescription />
-
       <ChartContainer config={chartConfig} className=" max-h-80 p-3">
-        <LineChart accessibilityLayer data={scatterData}>
+        <LineChart accessibilityLayer data={data}>
           <CartesianGrid vertical={false} />
-          <XAxis dataKey="x" />
+          <XAxis dataKey="date" />
           <YAxis />
-
           <ChartTooltip
             content={(props) => (
               <CustomTooltipContent
                 {...props}
                 labelMapper={(item: any) => item.label}
-                valueMapper={(item) => item.amount.toFixed(2)}
-                colorMapper={(item) => item.color}
+                valueMapper={(item: any) => Number(item?.amount ?? 0).toFixed(2)}
+                colorMapper={(item: any) => item.color}
               />
             )}
           />
           <Line
-            dataKey="y"
-            data={scatterData}
+            dataKey="total"
             stroke="var(--secondary-foreground)"
             strokeWidth={2}
             dot={(props) => {
-              const { cx, cy, payload } = props;
-              const uniqueKey = `dot-${payload.__uniqueId}`;
+              const { cx, cy, payload, index } = props;
+
+              const dominantColor =
+                payload.items && payload.items.length > 0
+                  ? chartConfig[payload.items[0].category_id || ""]?.color ??
+                    "var(--secondary-foreground)"
+                  : "var(--secondary-foreground)";
+
               return (
                 <circle
-                  key={uniqueKey}
+                  key={`dot-${payload.date}-${index}`}
                   cx={cx}
                   cy={cy}
                   r={3}
-                  fill={payload.color}
+                  fill={dominantColor}
                   stroke="#00000022"
                   strokeWidth={1}
                 />

@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/services/supabase/server";
 import { InsertCategory } from "@/types/categories";
 import { revalidatePath } from "next/cache";
 

@@ -1,4 +1,3 @@
-// src/components/modals/add-transaction-form.tsx
 "use client";
 
 import { useState } from "react";
@@ -12,7 +11,6 @@ import {
   BanknoteArrowDown,
   BanknoteArrowUp,
   CalendarIcon,
-  ChevronDownIcon,
   Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,7 +32,6 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { createTransaction } from "@/lib/supabase/actions/transactions-actions";
 
 import {
   Dialog,
@@ -49,6 +46,7 @@ import { DbAccount } from "@/types/accounts";
 import { DbCategory } from "@/types/categories";
 import { InsertTransaction, TransactionType } from "@/types/transactions";
 import { handleActionToast } from "@/lib/utils";
+import { createTransaction } from "@/services/transactions-actions";
 
 const FormSchema = z
   .object({

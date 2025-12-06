@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingSpin } from "./loading-spin";
 
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/services/supabase/client";
 import { cn } from "@/lib/utils";
 
 import { useRouter } from "next/navigation";

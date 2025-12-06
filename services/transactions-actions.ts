@@ -1,30 +1,41 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { calculateAccountBalance } from "./accounts-actions";
-import { TransactionPayload } from "@/types/transactions";
+import { createClient } from "@/services/supabase/server";
+import { DbTransaction } from "@/types/transactions";
 
-function buildDatabaseTransactionPayload(formData: TransactionPayload, userId: string | undefined) {
+function isDate(value: any): value is Date {
+  return value instanceof Date && !isNaN(value.getTime());
+}
+function buildDatabaseDbTransaction(formData: DbTransaction, userId: string | undefined) {
+  let transactionDate: string | undefined = undefined;
+
+  if (isDate(formData.transaction_date)) {
+    transactionDate = formData.transaction_date.toISOString().split("T")[0];
+  } else if (typeof formData.transaction_date === "string") {
+    transactionDate = formData.transaction_date;
+  }
+
   return {
     title: formData.title ?? null,
     type: formData.type,
-    amount: String(formData.amount),
-    transaction_date: formData.transaction_date,
-    direction: formData.type === "income" ? "in" : "out",
+    amount: Number(formData.amount),
+    transaction_date: transactionDate,
+    direction: formData.type === "income" ? "in" : formData.type === "expense" ? "out" : null,
     account_id: formData.account_id,
     target_account_id: formData.type === "transfer" ? formData.target_account_id ?? null : null,
     category_id: formData.type !== "transfer" ? formData.category_id ?? null : null,
-    user_id: userId,
+    user_id: userId ?? undefined,
   };
 }
 
-export async function createTransaction(formData: TransactionPayload, accountId: string) {
+export async function createTransaction(formData: DbTransaction, accountId: number) {
   const supabase = await createClient();
   const user = (await supabase.auth.getUser()).data.user;
   const userId = user?.id;
 
-  const payload = buildDatabaseTransactionPayload(formData, userId);
+  const payload = buildDatabaseDbTransaction(formData, userId);
 
   const { error } = await supabase.from("transactions").insert(payload);
 
@@ -34,15 +45,20 @@ export async function createTransaction(formData: TransactionPayload, accountId:
   }
 
   await calculateAccountBalance(accountId);
+
+  if (formData.type === "transfer" && formData.target_account_id) {
+    await calculateAccountBalance(formData.target_account_id);
+  }
+
   revalidatePath("/");
 
   return { success: true, message: "Transaction created successfully!" };
 }
 
 export async function updateTransaction(
-  transactionId: string,
-  accountId: string,
-  formData: Partial<TransactionPayload>
+  transactionId: number,
+  accountId: number,
+  formData: Partial<DbTransaction>
 ) {
   const supabase = await createClient();
 
@@ -74,7 +90,7 @@ export async function updateTransaction(
   return { success: true, message: "Transaction updated successfully!" };
 }
 
-export async function deleteTransaction(transactionId: string, accountId: string) {
+export async function deleteTransaction(transactionId: number, accountId: number) {
   const supabase = await createClient();
 
   const { error } = await supabase.from("transactions").delete().eq("id", transactionId);

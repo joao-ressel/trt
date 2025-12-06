@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/services/supabase/server";
 
 export async function getYearsInterval() {
   const supabase = await createClient();

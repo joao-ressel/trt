@@ -4,7 +4,7 @@ import { FilterPeriod, DbTransaction } from "../types/transactions";
 import { DbCategory } from "@/types/categories";
 import { DbAccount } from "@/types/accounts";
 
-type ChartConfig = Record<string, { label: string; color: string | undefined | null }>;
+export type ChartConfig = Record<string, { label: string; color: string | undefined | null }>;
 
 export function buildChartConfig(categories: DbCategory[]) {
   return Object.fromEntries(
@@ -30,12 +30,15 @@ function filterByPeriod(transactions: DbTransaction[], period: FilterPeriod) {
     month: startOfMonth(now),
     year: startOfYear(now),
   };
+
   const startDate = startDateMap[period];
 
   return transactions.filter((tx) => {
-    const txDate = tx.transaction_date;
+    if (!tx.transaction_date) return false;
 
-    const isInPeriod = isAfter(String(txDate), startDate) || isEqual(String(txDate), startDate);
+    const txDate = new Date(tx.transaction_date);
+
+    const isInPeriod = isAfter(txDate, startDate) || isEqual(txDate, startDate);
     const isNotTransfer = tx.type !== "transfer";
 
     return isInPeriod && isNotTransfer;

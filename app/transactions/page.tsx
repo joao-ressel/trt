@@ -1,5 +1,5 @@
 import { getYearsInterval } from "@/services/get-years-interval";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/services/supabase/server";
 
 import { DbTransaction } from "@/types/transactions";
 

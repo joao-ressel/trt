@@ -1,6 +1,6 @@
 // Ajuste o caminho conforme necessário
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/services/supabase/server";
 import { DbAccount } from "@/types/accounts";
 import { DbCategory } from "@/types/categories";
 import { FormattedTransaction } from "@/types/transaction-schema";

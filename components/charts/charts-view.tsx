@@ -17,8 +17,15 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ChartTransactionsByCategory } from "./chart-transactions-by-category";
-import { applyAllFilters, getAccountsTotalBalance, getTotals } from "../../services/chart-data";
-import { ChatTimelineCategories } from "./chart-timeline-categories";
+import {
+  applyAllFilters,
+  getAccountsTotalBalance,
+  getTotals,
+  chartData,
+  chartDataTop5Days,
+  chartLineData,
+} from "../../services/chart-data";
+import { ChartTimelineCategories } from "./chart-timeline-categories";
 import { ChartTop5Days } from "./chart-top-5-days";
 import { currencyFormatter } from "@/lib/utils";
 
@@ -33,12 +40,36 @@ interface ChartsViewProps {
 export function ChartsView({ transactions, categories, accounts }: ChartsViewProps) {
   const [selectedPeriod, setSelectedPeriod] = React.useState<FilterPeriod>("month");
   const [selectedType, setSelectedType] = React.useState<FilterTransactionType>("all");
+  const chartDataByCategory = chartData({
+    transactions,
+    selectedPeriod,
+    typeSelected: selectedType,
+  });
+
+  const top5DaysData = chartDataTop5Days({
+    transactions,
+    categories,
+    selectedPeriod,
+    typeSelected: selectedType,
+  });
+
+  const timelineData = chartLineData({
+    transactions,
+    categories,
+    selectedPeriod,
+    typeSelected: selectedType,
+  });
 
   const filteredTransactions = applyAllFilters(transactions, selectedPeriod, selectedType);
-
   const totalAccounts = currencyFormatter.format(getAccountsTotalBalance(accounts));
   const totalExpense = currencyFormatter.format(getTotals(filteredTransactions).totalExpense);
   const totalIncome = currencyFormatter.format(getTotals(filteredTransactions).totalIncome);
+  console.log("timelineData", timelineData);
+  console.log("transactions", transactions.length);
+  console.log("selectedPeriod", selectedPeriod);
+  console.log("typeSelected", selectedType);
+
+  console.log("timelineData", timelineData.length);
 
   return (
     <div className="flex flex-col gap-4 m-0">
@@ -148,25 +179,27 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
           </CardAction>
         </CardHeader>
         <CardContent className="flex gap-4 p-3 w-full">
-          <ChartTransactionsByCategory
-            categories={categories}
-            transactions={transactions}
-            typeSelected={selectedType}
-            selectedPeriod={selectedPeriod}
-          />
-          <ChartTop5Days
-            categories={categories}
-            transactions={transactions}
-            typeSelected={selectedType}
-            selectedPeriod={selectedPeriod}
-          />
+          <CardContent className="flex gap-4 p-3 w-full">
+            <ChartTransactionsByCategory
+              data={chartDataByCategory.data}
+              categories={categories}
+              typeSelected={selectedType}
+              selectedPeriod={selectedPeriod}
+            />
 
-          <ChatTimelineCategories
-            categories={categories}
-            transactions={transactions}
-            typeSelected={selectedType}
-            selectedPeriod={selectedPeriod}
-          />
+            <ChartTop5Days
+              categories={categories}
+              transactions={transactions}
+              selectedPeriod={selectedPeriod}
+              typeSelected={selectedType}
+            />
+
+            <ChartTimelineCategories
+              typeSelected={selectedType}
+              data={timelineData}
+              categories={categories}
+            />
+          </CardContent>
         </CardContent>
       </Card>
     </div>

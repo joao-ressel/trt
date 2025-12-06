@@ -1,7 +1,5 @@
 "use client";
 
-import { deleteCategory } from "@/lib/supabase/actions/categories-actions";
-
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash2 } from "lucide-react";
 import {
@@ -14,12 +12,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-import { Category } from "@/types/categories";
+import { DbCategory } from "@/types/categories";
 import { useState } from "react";
 import { handleActionToast } from "@/lib/utils";
+import { deleteCategory } from "@/services/categories-actions";
 
 interface CategoryActionsProps {
-  category: Category;
+  category: DbCategory;
 }
 
 export function DeleteCategory({ category }: CategoryActionsProps) {
@@ -29,7 +28,7 @@ export function DeleteCategory({ category }: CategoryActionsProps) {
   const handleDelete = async () => {
     setIsLoading(true);
 
-    await handleActionToast(deleteCategory(category.id.toString()), {
+    await handleActionToast(deleteCategory(category.id), {
       closeModal: () => setIsDeleteDialogOpen(false),
     });
   };

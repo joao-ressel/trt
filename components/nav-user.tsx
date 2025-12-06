@@ -13,7 +13,7 @@ import { LogOut } from "lucide-react";
 import { useCurrentUserName } from "@/hooks/use-current-user-name";
 import { useCurrentUserEmail } from "@/hooks/use-current-user-email";
 import { Button } from "./ui/button";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/services/supabase/client";
 
 export function NavUser() {
   const userName = useCurrentUserName();

@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/services/supabase/server";
 import { revalidatePath, unstable_noStore } from "next/cache";
 import { DbAccount, InsertAccount } from "@/types/accounts";
 

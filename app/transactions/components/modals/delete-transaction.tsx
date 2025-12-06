@@ -9,8 +9,8 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { deleteTransaction } from "@/lib/supabase/actions/transactions-actions";
 import { handleActionToast } from "@/lib/utils";
+import { deleteTransaction } from "@/services/transactions-actions";
 import { DbTransaction } from "@/types/transactions";
 import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/services/supabase/server";
 import { ChartsView } from "@/components/charts/charts-view";
 import { TableTransactions } from "@/components/table/table-transactions";
 import { getFormattedTransactions } from "@/services/data-fetcher";

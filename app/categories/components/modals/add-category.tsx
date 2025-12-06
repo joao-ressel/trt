@@ -33,9 +33,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { createCategory } from "@/lib/supabase/actions/categories-actions";
 import { ICON_OPTIONS } from "@/types/categories";
 import { handleActionToast } from "@/lib/utils";
+import { createCategory } from "@/services/categories-actions";
 
 const FormSchema = z.object({
   name: z.string().min(2, "The category name must be at least 2 characters long."),
