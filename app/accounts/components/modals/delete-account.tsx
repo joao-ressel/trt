@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-import { deleteAccount } from "@/lib/supabase/actions/accounts-actions";
+import { deleteAccount } from "@/lib/supabase/accounts-actions";
 import { handleActionToast } from "@/lib/utils";
 import { DbAccount } from "@/types/accounts";
 

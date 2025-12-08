@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { createAccount } from "@/lib/supabase/actions/accounts-actions";
+import { createAccount } from "@/lib/supabase/accounts-actions";
 import {
   Dialog,
   DialogClose,

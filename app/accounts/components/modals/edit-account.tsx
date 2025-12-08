@@ -29,7 +29,7 @@ import { useState } from "react";
 import * as z from "zod";
 import {} from "@/types/transactions";
 import { formatCurrencyToNumber, handleActionToast } from "@/lib/utils";
-import { updateAccount } from "@/lib/supabase/actions/accounts-actions";
+import { updateAccount } from "@/lib/supabase/accounts-actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {

@@ -39,7 +39,7 @@ import {
 import { useState } from "react";
 import * as z from "zod";
 import { DbTransaction, TransactionType } from "@/types/transactions";
-import { updateTransaction } from "@/lib/supabase/actions/transactions-actions";
+import { updateTransaction } from "@/lib/supabase/transactions-actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DbAccount } from "@/types/accounts";
