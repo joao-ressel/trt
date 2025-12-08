@@ -29,10 +29,10 @@ import { Pencil, Loader2, Save, BanknoteArrowDown, BanknoteArrowUp } from "lucid
 import { useState } from "react";
 import * as z from "zod";
 import { DbCategory, CategoryType, ICON_OPTIONS, InsertCategory } from "@/types/categories";
-import { updateCategory } from "@/lib/supabase/actions/categories-actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { handleActionToast } from "@/lib/utils";
+import { updateCategory } from "@/services/categories-actions";
 
 type CategoryEditFormValues = z.infer<typeof categoryEditSchema>;
 

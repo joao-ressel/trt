@@ -23,7 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { createAccount } from "@/lib/supabase/actions/accounts-actions";
 import {
   Dialog,
   DialogClose,
@@ -43,6 +42,7 @@ import {
 } from "@/types/accounts";
 import { useState } from "react";
 import { handleActionToast } from "@/lib/utils";
+import { createAccount } from "@/services/accounts-actions";
 
 const FormSchema = z.object({
   name: z.string().min(2, "The account name must be at least 2 characters long."),

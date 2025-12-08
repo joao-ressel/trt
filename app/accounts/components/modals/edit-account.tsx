@@ -29,7 +29,6 @@ import { useState } from "react";
 import * as z from "zod";
 import {} from "@/types/transactions";
 import { formatCurrencyToNumber, handleActionToast } from "@/lib/utils";
-import { updateAccount } from "@/lib/supabase/actions/accounts-actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -39,6 +38,7 @@ import {
   CURRENCY_TYPES,
   CurrencyType,
 } from "@/types/accounts";
+import { updateAccount } from "@/services/accounts-actions";
 
 type AccountEditFormValues = z.infer<typeof accountEditSchema>;
 

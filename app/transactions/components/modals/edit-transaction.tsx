@@ -39,7 +39,6 @@ import {
 import { useState } from "react";
 import * as z from "zod";
 import { DbTransaction, TransactionType } from "@/types/transactions";
-import { updateTransaction } from "@/lib/supabase/actions/transactions-actions";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DbAccount } from "@/types/accounts";
@@ -48,6 +47,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format, parseISO } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { handleActionToast } from "@/lib/utils";
+import { updateTransaction } from "@/services/transactions-actions";
 
 type TransactionEditFormValues = z.infer<typeof transactionEditSchema>;
 
@@ -132,11 +132,7 @@ export function EditTransaction({
     };
 
     await handleActionToast(
-      updateTransaction(
-        String(transaction.id ?? ""),
-        String(transaction.account_id ?? ""),
-        payload
-      ),
+      updateTransaction(transaction.id ?? "", transaction.account_id ?? "", payload),
       {
         form,
         closeModal: () => setIsOpen(false),

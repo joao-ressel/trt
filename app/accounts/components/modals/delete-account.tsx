@@ -11,8 +11,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-import { deleteAccount } from "@/lib/supabase/actions/accounts-actions";
 import { handleActionToast } from "@/lib/utils";
+import { deleteAccount } from "@/services/accounts-actions";
 import { DbAccount } from "@/types/accounts";
 
 import { Loader2, Trash2 } from "lucide-react";
