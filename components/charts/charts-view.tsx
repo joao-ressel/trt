@@ -28,6 +28,15 @@ import {
 import { ChartTimelineCategories } from "./chart-timeline-categories";
 import { ChartTop5Days } from "./chart-top-5-days";
 import { currencyFormatter } from "@/lib/utils";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { type CarouselApi } from "@/components/ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "../ui/carousel";
 
 export const description = "An interactive area chart";
 
@@ -70,6 +79,21 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
   console.log("typeSelected", selectedType);
 
   console.log("timelineData", timelineData.length);
+  const [api, setApi] = React.useState<CarouselApi>();
+  const [current, setCurrent] = React.useState(0);
+  const [count, setCount] = React.useState(0);
+  React.useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
 
   return (
     <div className="flex flex-col gap-4 m-0">
@@ -178,29 +202,60 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
             </Select>
           </CardAction>
         </CardHeader>
-        <CardContent className="flex gap-4 p-3 w-full">
-          <CardContent className="flex gap-4 p-3 w-full">
-            <ChartTransactionsByCategory
-              data={chartDataByCategory.data}
-              categories={categories}
-              typeSelected={selectedType}
-              selectedPeriod={selectedPeriod}
-            />
 
-            <ChartTop5Days
-              categories={categories}
-              transactions={transactions}
-              selectedPeriod={selectedPeriod}
-              typeSelected={selectedType}
-            />
+        <CardContent className=" gap-4 p-3 w-full hidden md:flex">
+          <ChartTransactionsByCategory
+            data={chartDataByCategory.data}
+            categories={categories}
+            typeSelected={selectedType}
+            selectedPeriod={selectedPeriod}
+          />
 
-            <ChartTimelineCategories
-              typeSelected={selectedType}
-              data={timelineData}
-              categories={categories}
-            />
-          </CardContent>
+          <ChartTop5Days
+            categories={categories}
+            transactions={transactions}
+            selectedPeriod={selectedPeriod}
+            typeSelected={selectedType}
+          />
+
+          <ChartTimelineCategories
+            typeSelected={selectedType}
+            data={timelineData}
+            categories={categories}
+          />
         </CardContent>
+        <Carousel setApi={setApi} className="flex md:hidden gap-4 p-3 w-full ">
+          <CarouselContent>
+            <CarouselItem>
+              <ChartTransactionsByCategory
+                data={chartDataByCategory.data}
+                categories={categories}
+                typeSelected={selectedType}
+                selectedPeriod={selectedPeriod}
+              />
+            </CarouselItem>
+            <CarouselItem>
+              <ChartTop5Days
+                categories={categories}
+                transactions={transactions}
+                selectedPeriod={selectedPeriod}
+                typeSelected={selectedType}
+              />
+            </CarouselItem>
+            <CarouselItem>
+              <ChartTimelineCategories
+                typeSelected={selectedType}
+                data={timelineData}
+                categories={categories}
+              />
+            </CarouselItem>
+          </CarouselContent>
+          <CarouselPrevious variant="default" className="left-5 rounded-md bottom-0" />
+          <CarouselNext variant="default" className="rounded-md right-5 bottom-0" />
+        </Carousel>
+        <div className="text-muted-foreground py-2 text-center text-sm md:hidden">
+          Chart {current} of {count}
+        </div>
       </Card>
     </div>
   );

@@ -3,7 +3,7 @@ import { buildChartConfig } from "../../services/chart-data";
 import { Card, CardDescription, CardTitle } from "../ui/card";
 import { ChartContainer, ChartTooltip } from "../ui/chart";
 import { FilterTransactionType } from "@/types/global";
-import { CustomTooltipContent } from "./custom/legend-custom";
+import { CustomTooltipContent } from "./custom/tooltip-custom";
 import { DbCategory } from "@/types/categories";
 
 export function ChartTimelineCategories({

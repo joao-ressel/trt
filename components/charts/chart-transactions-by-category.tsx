@@ -5,11 +5,11 @@ import { Bar, BarChart, CartesianGrid, Cell, LabelList, XAxis, YAxis } from "rec
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 
 import { buildChartConfig } from "../../services/chart-data";
-import { FilterTransactionType, PropsFilters } from "@/types/global";
+import { FilterTransactionType } from "@/types/global";
 import { Card, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { CustomTooltipContent } from "./custom/legend-custom";
+import { CustomTooltipContent } from "./custom/tooltip-custom";
 import { CustomYAxisTick } from "./custom/tick-cumtom";
 import { DbCategory } from "@/types/categories";
 import { FilterPeriod } from "@/types/transactions";
@@ -141,8 +141,8 @@ export function ChartTransactionsByCategory({
         </ChartContainer>
 
         {/* Paginação */}
-        <div className="flex justify-center gap-4 p-2 items-center">
-          <Button onClick={goToPrevPage} variant="icon" disabled={currentPage === 0}>
+        <div className="flex-1 flex justify-center gap-4 p-2 items-center">
+          <Button onClick={goToPrevPage} variant="ghost" disabled={currentPage === 0}>
             <ArrowLeft />
           </Button>
 
@@ -150,7 +150,7 @@ export function ChartTransactionsByCategory({
             {currentPage + 1} of {totalPages}
           </span>
 
-          <Button onClick={goToNextPage} variant="icon" disabled={currentPage === totalPages - 1}>
+          <Button onClick={goToNextPage} variant="ghost" disabled={currentPage === totalPages - 1}>
             <ArrowRight />
           </Button>
         </div>

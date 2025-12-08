@@ -8,7 +8,7 @@ import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { PropsFilters } from "@/types/global";
 
 import { buildChartConfig, chartDataTop5Days } from "../../services/chart-data";
-import { CustomTooltipContent } from "./custom/legend-custom";
+import { CustomTooltipContent } from "./custom/tooltip-custom";
 
 export function ChartTop5Days({
   transactions,
