@@ -4,11 +4,10 @@ import { DbTransaction } from "@/types/transactions";
 import { DbAccount } from "@/types/accounts";
 import { DbCategory } from "@/types/categories";
 
-import { TableTransactions } from "./table-transactions";
 export type FetchedData = {
-  transactions: DbTransaction[] | null;
-  accounts: DbAccount[] | null;
-  categories: DbCategory[] | null;
+  transactions: DbTransaction[];
+  accounts: DbAccount[];
+  categories: DbCategory[];
 };
 
 export async function getDashboardData(): Promise<FetchedData> {
@@ -25,21 +24,22 @@ export async function getDashboardData(): Promise<FetchedData> {
   ]);
 
   if (transactionsError || accountsError || categoriesError) {
-    console.error("Erro ao buscar dados:", transactionsError || accountsError || categoriesError);
-    return { transactions: [], accounts: [], categories: [] };
+    console.error("Erro ao buscar dados:", {
+      transactionsError,
+      accountsError,
+      categoriesError,
+    });
+
+    return {
+      transactions: [],
+      accounts: [],
+      categories: [],
+    };
   }
 
-  return { transactions, accounts, categories };
-}
-
-export async function TableTransactionsServer() {
-  const { transactions, accounts, categories } = await getDashboardData();
-
-  return (
-    <TableTransactions
-      data={transactions ?? []}
-      accounts={accounts ?? []}
-      categories={categories ?? []}
-    />
-  );
+  return {
+    transactions: transactions ?? [],
+    accounts: accounts ?? [],
+    categories: categories ?? [],
+  };
 }

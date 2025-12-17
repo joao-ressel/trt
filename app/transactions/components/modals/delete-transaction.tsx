@@ -16,7 +16,7 @@ import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface TransactionActionsProps {
-  account: string;
+  account: number;
   transaction: DbTransaction;
   closeDialog: () => void;
 }
@@ -29,7 +29,7 @@ export function DeleteTransaction({ transaction, account, closeDialog }: Transac
     closeDialog();
     setIsLoading(true);
 
-    await handleActionToast(deleteTransaction(String(transaction.id), account.toString()), {
+    await handleActionToast(deleteTransaction(transaction.id, account), {
       closeModal: () => setIsDeleteDialogOpen(false),
     });
   };

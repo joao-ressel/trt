@@ -1,5 +1,5 @@
 import React from "react";
-import { useReactTable } from "@tanstack/react-table";
+import { Table } from "@tanstack/react-table";
 import {
   Select,
   SelectContent,
@@ -9,35 +9,35 @@ import {
 } from "@/components/ui/select";
 import { FormattedTransaction } from "@/types/transaction-schema";
 
-export function FilterSelect({
-  columnId,
-  title,
-  table,
-}: {
-  columnId: "category_name" | "type" | "account_name";
+interface FilterSelectProps {
+  columnId: keyof FormattedTransaction;
   title: string;
-  table: ReturnType<typeof useReactTable<FormattedTransaction>>;
-}) {
+  table: Table<FormattedTransaction>;
+}
+
+export function FilterSelect({ columnId, title, table }: FilterSelectProps) {
   const column = table.getColumn(columnId);
-  const facetValues = column?.getFacetedUniqueValues();
+  if (!column) return null;
+
+  const facetValues = column.getFacetedUniqueValues();
 
   const sortedUniqueValues = React.useMemo(
     () =>
-      Array.from(facetValues?.keys() ?? [])
+      Array.from(facetValues.keys())
         .map((value) => String(value).trim())
-        .filter((value) => value && value !== "")
+        .filter(Boolean)
         .sort(),
     [facetValues]
   );
 
-  const filterValue = column?.getFilterValue() as string[] | undefined;
-  const selectedValue = filterValue?.[0] || "";
+  const filterValue = column.getFilterValue() as string[] | undefined;
+  const selectedValue = filterValue?.[0];
 
   return (
     <Select
-      value={selectedValue || undefined}
+      value={selectedValue}
       onValueChange={(value) => {
-        column?.setFilterValue(value === "__all__" ? undefined : [value]);
+        column.setFilterValue(value === "__all__" ? undefined : [value]);
       }}
     >
       <SelectTrigger className="w-full">

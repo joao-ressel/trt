@@ -2,10 +2,21 @@
 
 import * as React from "react";
 
-import { z } from "zod";
-import { Download, X } from "lucide-react";
-
-import { schemaTransaction } from "@/types/transaction-schema";
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  Row,
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from "@tanstack/react-table";
 
 import {
   closestCenter,
@@ -26,6 +37,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
 import {
   IconAdjustmentsHorizontal,
   IconChevronDown,
@@ -35,23 +47,8 @@ import {
   IconChevronsRight,
   IconDotsVertical,
   IconLayoutColumns,
-  IconPlus,
 } from "@tabler/icons-react";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  Row,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from "@tanstack/react-table";
+import { Download, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -71,8 +68,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { FilterSelect } from "./filters/select-filter";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetClose,
@@ -80,92 +76,68 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "../ui/sheet";
-import AddTransactionForm from "@/app/transactions/components/modals/add-transaction";
-import { getDashboardData } from "./get-data";
-import { DbAccount } from "@/types/accounts";
-import { DbCategory } from "@/types/categories";
-import { DbTransaction } from "@/types/transactions";
+} from "@/components/ui/sheet";
 
+import { FilterSelect } from "./filters/select-filter";
+import AddTransactionForm from "@/app/transactions/components/modals/add-transaction";
+
+import { FormattedTransaction } from "@/types/transaction-schema";
+
+// ======================
+// Columns
+// ======================
 const columns: ColumnDef<FormattedTransaction>[] = [
   {
     accessorKey: "title",
     header: "Title",
-    cell: ({ row }) => {
-      return row.original.title;
-    },
     enableHiding: false,
   },
   {
     accessorKey: "amount",
-    header: () => "Amount",
+    header: "Amount",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
       const formatted = new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
-      }).format(amount);
+      }).format(row.original.amount);
 
-      const isIncome = row.original.type === "income";
-      const textColor = isIncome ? "text-green-500" : "text-red-500";
+      const color = row.original.type === "income" ? "text-green-500" : "text-red-500";
 
-      return <div className={`font-medium ${textColor}`}>{formatted}</div>;
+      return <span className={`font-medium ${color}`}>{formatted}</span>;
     },
   },
   {
     accessorKey: "type",
     header: "Type",
-    cell: ({ row }) => {
-      return row.original.type === "income" ? "Income" : "Expense";
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
+    cell: ({ row }) => (row.original.type === "income" ? "Income" : "Expense"),
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },
   {
     accessorKey: "category_name",
     header: "Category",
-    cell: ({ row }) => {
-      return row.original.category_name;
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },
   {
     accessorKey: "account_name",
     header: "Account",
-    cell: ({ row }) => <div>{row.original.account_name}</div>,
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },
   {
     accessorKey: "transaction_date",
     header: "Date",
-    cell: ({ row }) => {
-      const date = new Date(row.original.transaction_date);
-      const formattedDate = date.toLocaleDateString("pt-BR");
-      return <div>{formattedDate}</div>;
-    },
+    cell: ({ row }) => new Date(row.original.transaction_date).toLocaleDateString("pt-BR"),
   },
   {
     id: "actions",
     cell: () => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-            size="icon"
-          >
+          <Button variant="ghost" size="icon">
             <IconDotsVertical />
-            <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
+        <DropdownMenuContent align="end">
           <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
         </DropdownMenuContent>
@@ -174,63 +146,21 @@ const columns: ColumnDef<FormattedTransaction>[] = [
   },
 ];
 
-interface FormattedTransaction {
-  id: string;
-  title: string;
-  amount: number;
-  type: string;
-  direction: "in" | "out";
-  transaction_date: string;
-  category_id: string;
-  account_id: string;
-  account_name: string;
-  category_name: string;
-}
-
-function mapRawData(
-  transactions: DbTransaction[],
-  accounts: DbAccount[],
-  categories: DbCategory[]
-): FormattedTransaction[] {
-  const accountMap = new Map(accounts?.map((acc) => [acc.id, acc.name]) || []);
-  const categoryMap = new Map(categories?.map((cat) => [cat.id, cat.name]) || []);
-
-  return transactions.map((t) => {
-    const accountName = accountMap.get(t.account_id) || "Conta Desconhecida";
-    const categoryName = t.category_id
-      ? categoryMap.get(t.category_id) || "Categoria Desconhecida"
-      : "Sem Categoria";
-
-    return {
-      id: String(t.id),
-      title: t.title ?? "Sem Título",
-      amount: t.amount || 0,
-      type: t.type ?? "expense",
-      direction: t.direction === "in" || t.direction === "out" ? t.direction : "out",
-      transaction_date: t.transaction_date ?? new Date().toISOString(),
-      category_id: t.category_id !== null ? String(t.category_id) : "0",
-      account_id: String(t.account_id),
-
-      account_name: accountName,
-      category_name: categoryName,
-    } as FormattedTransaction;
-  });
-}
-
-function DraggableRow({ row }: { row: Row<z.infer<typeof schemaTransaction>> }) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
+// ======================
+// Draggable Row
+// ======================
+function DraggableRow({ row }: { row: Row<FormattedTransaction> }) {
+  const { setNodeRef, transform, transition, isDragging } = useSortable({
     id: row.original.id,
   });
 
   return (
     <TableRow
-      data-state={row.getIsSelected() && "selected"}
-      data-dragging={isDragging}
       ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+      data-dragging={isDragging}
       style={{
         transform: CSS.Transform.toString(transform),
-        transition: transition,
+        transition,
       }}
     >
       {row.getVisibleCells().map((cell) => (
@@ -241,50 +171,50 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schemaTransaction>> }) 
     </TableRow>
   );
 }
-interface TableInterface {
-  data: DbTransaction[];
-  accounts: DbAccount[];
-  categories: DbCategory[];
+
+// ======================
+// Component
+// ======================
+interface TableTransactionsProps {
+  data: FormattedTransaction[];
 }
-export function TableTransactions({ data: rawTransactions, accounts, categories }: TableInterface) {
-  const formattedData = React.useMemo(() => {
-    return mapRawData(rawTransactions, accounts, categories);
-  }, [rawTransactions, accounts, categories]);
-  const [data, setData] = React.useState(() => formattedData);
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+
+export function TableTransactions({ data }: TableTransactionsProps) {
+  const [tableData, setTableData] = React.useState(data);
+
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
   });
-  const sortableId = React.useId();
+
   const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
+    useSensor(MouseSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor)
   );
 
-  const dataIds = React.useMemo<UniqueIdentifier[]>(() => data?.map(({ id }) => id) || [], [data]);
+  const dataIds = React.useMemo<UniqueIdentifier[]>(
+    () => tableData.map((row) => row.id),
+    [tableData]
+  );
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     state: {
       sorting,
-      columnVisibility,
-      rowSelection,
       columnFilters,
+      columnVisibility,
       pagination,
     },
-    getRowId: (row) => row.id.toString(),
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
+    getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -295,199 +225,58 @@ export function TableTransactions({ data: rawTransactions, accounts, categories 
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (active && over && active.id !== over.id) {
-      setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id);
-        const newIndex = dataIds.indexOf(over.id);
-        return arrayMove(data, oldIndex, newIndex);
+    if (over && active.id !== over.id) {
+      setTableData((prev) => {
+        const oldIndex = prev.findIndex((i) => i.id === active.id);
+        const newIndex = prev.findIndex((i) => i.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
       });
     }
   }
 
   return (
-    <Tabs defaultValue="outline" className="w-full flex-col justify-start gap-6 mt-6">
-      <div className="flex items-center gap-6">
-        <div className="hidden md:flex items-center gap-4 flex-1">
-          <Input
-            placeholder="Search...."
-            value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-            onChange={(event) => table.getColumn("title")?.setFilterValue(event.target.value)}
-          />
-          <FilterSelect columnId="category_name" title="Category" table={table} />
-          <FilterSelect columnId="type" title="Type" table={table} />
-          <FilterSelect columnId="account_name" title="Account" table={table} />
-        </div>
+    <Tabs defaultValue="outline" className="w-full mt-6">
+      <div className="flex items-center gap-4 mb-4">
+        <Input
+          placeholder="Search..."
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          onChange={(e) => table.getColumn("title")?.setFilterValue(e.target.value)}
+        />
 
-        <div className="md:hidden">
-          <Sheet>
-            <SheetTrigger className="p-4" asChild>
-              <Button variant="outline" size="sm" className="gap-1">
-                <IconAdjustmentsHorizontal className="w-4 h-4" />
-                Filters
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="left"
-              className="flex flex-col justify-end px-4 pb-15 [&>button]:hidden"
-            >
-              <SheetHeader className="p-0 flex flex-row justify-between items-center w-full">
-                <SheetTitle className="flex-1">Filter Transactions</SheetTitle>
-                <SheetClose className="flex justify-end px-0" asChild>
-                  <Button variant="ghost" className="p-0">
-                    <X className="w-4 h-4 p-0" />
-                  </Button>
-                </SheetClose>
-              </SheetHeader>
-              <div className="flex flex-col gap-4 w-full">
-                <Input
-                  className="flex-1"
-                  placeholder="Search...."
-                  value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-                  onChange={(event) => table.getColumn("title")?.setFilterValue(event.target.value)}
-                />
-
-                <FilterSelect columnId="category_name" title="Category" table={table} />
-                <FilterSelect columnId="type" title="Type" table={table} />
-                <FilterSelect columnId="account_name" title="Account" table={table} />
-              </div>
-
-              <SheetClose className="sheet-close-button" />
-            </SheetContent>
-          </Sheet>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="p-2 h-auto">
-                <IconLayoutColumns />
-                <span className="hidden lg:inline">Customize Columns</span>
-                <span className="lg:hidden">Columns</span>
-                <IconChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {table
-                .getAllColumns()
-                .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="p-2 h-auto">
-              <Download />
-              <span className="hidden lg:inline ">Download</span>
-            </Button>
-            <AddTransactionForm accounts={accounts ?? []} categories={categories ?? []} />
-          </div>
-        </div>
+        <FilterSelect columnId="category_name" title="Category" table={table} />
+        <FilterSelect columnId="type" title="Type" table={table} />
+        <FilterSelect columnId="account_name" title="Account" table={table} />
       </div>
-      <TabsContent value="outline" className="relative flex flex-col gap-4 overflow-auto ">
-        <div className="overflow-hidden rounded-lg border">
-          <DndContext
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragEnd={handleDragEnd}
-            sensors={sensors}
-            id={sortableId}
-          >
-            <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
+
+      <TabsContent value="outline">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis]}
+          onDragEnd={handleDragEnd}
+        >
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+
+            <TableBody>
+              <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
+                {table.getRowModel().rows.map((row) => (
+                  <DraggableRow key={row.id} row={row} />
                 ))}
-              </TableHeader>
-              <TableBody className="**:data-[slot=table-cell]:first:w-8">
-                {table.getRowModel().rows?.length ? (
-                  <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
-                    {table.getRowModel().rows.map((row) => (
-                      <DraggableRow key={row.id} row={row} />
-                    ))}
-                  </SortableContext>
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </DndContext>
-        </div>
-        <div className="flex items-center justify-between px-4">
-          <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
-          <div className="flex w-full items-center gap-8 lg:w-fit">
-            <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-            </div>
-            <div className="ml-auto flex items-center gap-2 lg:ml-0">
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to first page</span>
-                <IconChevronsLeft />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to previous page</span>
-                <IconChevronLeft />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to next page</span>
-                <IconChevronRight />
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden size-8 lg:flex"
-                size="icon"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to last page</span>
-                <IconChevronsRight />
-              </Button>
-            </div>
-          </div>
-        </div>
+              </SortableContext>
+            </TableBody>
+          </Table>
+        </DndContext>
       </TabsContent>
     </Tabs>
   );

@@ -193,7 +193,7 @@ export default function TransactionListItem({
             />
             <DeleteTransaction
               transaction={transaction}
-              account={String(transaction.account_id)}
+              account={transaction.account_id}
               closeDialog={() => setOpen(false)}
             />
           </div>
