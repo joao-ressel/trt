@@ -21,7 +21,10 @@ export default function TransactionsFilter({ month, year, years }: PropsFilter) 
   const router = useRouter();
 
   function update(m: number, y: number) {
-    router.push(`/transactions?month=${m}&year=${y}`);
+    document.cookie = `transactions_month=${m}; path=/`;
+    document.cookie = `transactions_year=${y}; path=/`;
+
+    router.refresh();
   }
 
   const [openMonth, setOpenMonth] = useState(false);

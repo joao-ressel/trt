@@ -3,12 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { calculateAccountBalance } from "./accounts-actions";
 import { createClient } from "@/services/supabase/server";
-import { DbTransaction } from "@/types/transactions";
+import { DbTransaction, InsertTransaction } from "@/types/transactions";
 
 function isDate(value: any): value is Date {
   return value instanceof Date && !isNaN(value.getTime());
 }
-function buildDatabaseDbTransaction(formData: DbTransaction, userId: string | undefined) {
+function buildDatabaseDbTransaction(formData: InsertTransaction, userId: string | undefined) {
   let transactionDate: string | undefined = undefined;
 
   if (isDate(formData.transaction_date)) {
@@ -30,7 +30,7 @@ function buildDatabaseDbTransaction(formData: DbTransaction, userId: string | un
   };
 }
 
-export async function createTransaction(formData: DbTransaction, accountId: number) {
+export async function createTransaction(formData: InsertTransaction, accountId: number) {
   const supabase = await createClient();
   const user = (await supabase.auth.getUser()).data.user;
   const userId = user?.id;
@@ -104,4 +104,43 @@ export async function deleteTransaction(transactionId: number, accountId: number
   revalidatePath("/");
 
   return { success: true, message: "Transaction successfully deleted!" };
+}
+
+export async function getYearsInterval(): Promise<number[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("transaction_date")
+    .order("transaction_date", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching years interval:", error);
+    return [];
+  }
+
+  if (!data || data.length === 0) {
+    return [new Date().getFullYear()];
+  }
+
+  const yearsSet = new Set<number>();
+
+  data.forEach((t) => {
+    if (t.transaction_date) {
+      const yearString = t.transaction_date.substring(0, 4);
+      const yearNumber = parseInt(yearString, 10);
+
+      if (!isNaN(yearNumber)) {
+        yearsSet.add(yearNumber);
+      }
+    }
+  });
+
+  const yearsArray = Array.from(yearsSet).sort((a, b) => b - a);
+
+  if (yearsArray.length === 0) {
+    yearsArray.push(new Date().getFullYear());
+  }
+
+  return yearsArray;
 }

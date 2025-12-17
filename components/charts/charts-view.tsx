@@ -28,7 +28,6 @@ import {
 import { ChartTimelineCategories } from "./chart-timeline-categories";
 import { ChartTop5Days } from "./chart-top-5-days";
 import { currencyFormatter } from "@/lib/utils";
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { type CarouselApi } from "@/components/ui/carousel";
 import {
   Carousel,
@@ -96,19 +95,19 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
   }, [api]);
 
   return (
-    <div className="flex flex-col gap-4 m-0">
+    <div className="flex flex-col gap-4 m-0 w-full z-1">
       <div className="w-full h-full flex gap-6 items-center justify-center">
-        <div className="w-full h-full flex flex-row justify-between gap-4 text-center">
-          <Card className="text-center self-center border border-border gap-1 h-fit p-2  w-full">
-            <span className="text-lg font-bold text-blue-500">{totalAccounts}</span>
-            <p className="text-sm text-secondary-foreground">Total</p>
-          </Card>
+        <div className="w-full h-full flex flex-row justify-between md:gap-4 gap-2 text-center">
           {(selectedType === "expense" || selectedType === "all") && (
             <Card className="text-center self-center  border border-border gap-1 h-fit p-2  w-full">
               <span className="text-lg font-bold text-red-500">{totalExpense}</span>
               <p className="text-sm text-secondary-foreground">Expense</p>
             </Card>
           )}
+          <Card className="text-center self-center border border-border gap-1 h-fit p-2  w-full">
+            <span className="text-lg font-bold text-blue-500">{totalAccounts}</span>
+            <p className="text-sm text-secondary-foreground">Total</p>
+          </Card>
           {(selectedType === "income" || selectedType === "all") && (
             <Card className="text-center self-center  border border-border gap-1 h-fit p-2  w-full">
               <span className="text-lg font-bold text-green-500">{totalIncome}</span>
@@ -118,9 +117,9 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
         </div>
       </div>
 
-      <Card className="@container/card p-0 m-0 border-border">
-        <CardHeader className="w-full flex justify-center gap-4 p-3 m-0">
-          <CardAction className="self-center h-full ">
+      <Card className="@container/card p-0 m-0 border-border w-full">
+        <CardHeader className="w-full flex justify-center md:gap-4 gap-2 p-3 m-0 flex-col md:flex-row">
+          <CardAction className="self-center h-full w-full flex md:w-auto">
             <ToggleGroup
               type="single"
               value={selectedType}
@@ -128,11 +127,11 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
                 setSelectedType(value);
               }}
               variant="outline"
-              className=" hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
+              className="w-full *:data-[slot=toggle-group-item]:flex-1! md:*:data-[slot=toggle-group-item]:px-4!  md:w-auto"
             >
               <ToggleGroupItem value="expense">Expense</ToggleGroupItem>
-              <ToggleGroupItem value="income">Income</ToggleGroupItem>
               <ToggleGroupItem value="all">All</ToggleGroupItem>
+              <ToggleGroupItem value="income">Income</ToggleGroupItem>
             </ToggleGroup>
             <Select
               value={selectedType}
@@ -141,11 +140,11 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
               }}
             >
               <SelectTrigger
-                className=" flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
+                className="hidden **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate  @[767px]/card:hidden"
                 size="sm"
                 aria-label="Select a value"
               >
-                <SelectValue placeholder="Last 3 months" />
+                <SelectValue placeholder="all" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
                 <SelectItem value="expense" className="rounded-lg">
@@ -161,7 +160,7 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
             </Select>
           </CardAction>
 
-          <CardAction className="self-center">
+          <CardAction className="self-center h-full w-full flex md:w-auto">
             <ToggleGroup
               type="single"
               value={selectedPeriod}
@@ -169,7 +168,7 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
                 setSelectedPeriod(value);
               }}
               variant="outline"
-              className=" hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
+              className="w-full *:data-[slot=toggle-group-item]:flex-1! md:*:data-[slot=toggle-group-item]:px-4!  md:w-auto"
             >
               <ToggleGroupItem value="week">Week</ToggleGroupItem>
               <ToggleGroupItem value="month">Month</ToggleGroupItem>
@@ -182,13 +181,13 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
               }}
             >
               <SelectTrigger
-                className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
+                className="hidden **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
                 size="sm"
                 aria-label="Select a value"
               >
                 <SelectValue placeholder="Last 3 months" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl">
+              <SelectContent className="rounded-xl z-50">
                 <SelectItem value="week" className="rounded-lg">
                   Week
                 </SelectItem>

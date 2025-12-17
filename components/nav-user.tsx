@@ -27,13 +27,14 @@ export function NavUser() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+        <div className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground flex gap-2 items-center">
           <CurrentUserAvatar className="size-9" />
+          <span className="truncate font-medium md:hidden">{userName}</span>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-        side={"right"}
+        side={"bottom"}
         align="end"
         sideOffset={4}
       >

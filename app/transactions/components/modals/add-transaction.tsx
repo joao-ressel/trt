@@ -55,7 +55,7 @@ const FormSchema = z
     amount: z.string().regex(/^\d+(?:[.,]\d{1,2})?$/, "Invalid value format."),
     type: z.enum(["income", "expense", "transfer"]),
     transaction_date: z.date(),
-    account_id: z.number(),
+    account_id: z.number().nullable(),
     category_id: z.number().optional(),
     target_account_id: z.number().optional().nullable(),
   })
@@ -88,7 +88,7 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
       amount: "",
       type: "expense",
       transaction_date: new Date(),
-      account_id: undefined,
+      account_id: 1,
       category_id: undefined,
       target_account_id: undefined,
     },
@@ -103,18 +103,18 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
       alert("Invalid value.");
       return;
     }
-
+    const accountId = data.account_id ?? 1;
     const payload: InsertTransaction = {
       title: data.title,
       amount: amountFloat,
       type: data.type,
       transaction_date: format(data.transaction_date, "yyyy-MM-dd"),
-      account_id: Number(data.account_id),
-      category_id: Number(data.category_id),
-      target_account_id: Number(data.target_account_id),
+      account_id: accountId,
+      category_id: data.category_id,
+      target_account_id: data.target_account_id,
     };
 
-    await handleActionToast(createTransaction(payload, String(payload.account_id)), {
+    await handleActionToast(createTransaction(payload, payload.account_id), {
       form,
       closeModal: () => setIsOpen(false),
     });
@@ -128,8 +128,9 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus size={30} /> New Transaction
+        <Button className="p-2 h-auto">
+          <Plus size={30} />
+          <p className="hidden md:flex">New Transaction</p>
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -317,7 +318,7 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
                     <FormItem>
                       <FormLabel>Destination Account</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => field.onChange(Number(value))}
                         defaultValue={field.value ? String(field.value) : undefined}
                       >
                         <FormControl>

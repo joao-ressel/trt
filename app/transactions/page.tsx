@@ -6,22 +6,23 @@ import { DbTransaction } from "@/types/transactions";
 import TransactionListItem from "@/app/transactions/components/transaction-list-item";
 import AddTransactionForm from "./components/modals/add-transaction";
 import TransactionsFilter from "./components/transaction-filter";
+import { cookies } from "next/headers";
 
-export default async function TransactionsPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
-  const currentDate = new Date();
-  const month = Number(searchParams?.month) || currentDate.getMonth() + 1;
-  const year = Number(searchParams?.year) || currentDate.getFullYear();
+export default async function TransactionsPage() {
+  const cookieStore = await cookies();
+  const now = new Date();
+
+  const month = Number(cookieStore.get("transactions_month")?.value) || now.getMonth() + 1;
+
+  const year = Number(cookieStore.get("transactions_year")?.value) || now.getFullYear();
+
   const start = `${year}-${String(month).padStart(2, "0")}-01`;
-  const nextMonth =
-    month === 12 ? `${year + 1}-01-01` : `${year}-${String(month + 1).padStart(2, "0")}-01`;
-  const years = await getYearsInterval();
+
+  const nextMonth = new Date(year, month, 1).toISOString().slice(0, 10);
 
   const supabase = await createClient();
-  const [{ data: transactionsOriginal }, { data: accounts }, { data: categories }] =
+
+  const [{ data: transactionsOriginal }, { data: accounts }, { data: categories }, years] =
     await Promise.all([
       supabase
         .from("transactions")
@@ -30,6 +31,7 @@ export default async function TransactionsPage({
         .lt("transaction_date", nextMonth),
       supabase.from("accounts").select("*"),
       supabase.from("categories").select("*"),
+      getYearsInterval(),
     ]);
 
   function groupByDate(transactions: DbTransaction[]) {
@@ -46,7 +48,6 @@ export default async function TransactionsPage({
   }
 
   const grouped = groupByDate(transactionsOriginal ?? []);
-
   return (
     <div className="w-full min-h-[calc(100vh-(var(--spacing) * 20))] p-6 space-y-6">
       <main className="flex w-full gap-8 md:gap-4">

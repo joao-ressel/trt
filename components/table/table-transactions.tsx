@@ -3,9 +3,9 @@
 import * as React from "react";
 
 import { z } from "zod";
-import { Download } from "lucide-react";
+import { Download, X } from "lucide-react";
 
-import { FormattedTransaction, schemaTransaction } from "@/types/transaction-schema";
+import { schemaTransaction } from "@/types/transaction-schema";
 
 import {
   closestCenter,
@@ -27,6 +27,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  IconAdjustmentsHorizontal,
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
@@ -72,6 +73,19 @@ import {
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { FilterSelect } from "./filters/select-filter";
 import { Input } from "../ui/input";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../ui/sheet";
+import AddTransactionForm from "@/app/transactions/components/modals/add-transaction";
+import { getDashboardData } from "./get-data";
+import { DbAccount } from "@/types/accounts";
+import { DbCategory } from "@/types/categories";
+import { DbTransaction } from "@/types/transactions";
 
 const columns: ColumnDef<FormattedTransaction>[] = [
   {
@@ -160,6 +174,49 @@ const columns: ColumnDef<FormattedTransaction>[] = [
   },
 ];
 
+interface FormattedTransaction {
+  id: string;
+  title: string;
+  amount: number;
+  type: string;
+  direction: "in" | "out";
+  transaction_date: string;
+  category_id: string;
+  account_id: string;
+  account_name: string;
+  category_name: string;
+}
+
+function mapRawData(
+  transactions: DbTransaction[],
+  accounts: DbAccount[],
+  categories: DbCategory[]
+): FormattedTransaction[] {
+  const accountMap = new Map(accounts?.map((acc) => [acc.id, acc.name]) || []);
+  const categoryMap = new Map(categories?.map((cat) => [cat.id, cat.name]) || []);
+
+  return transactions.map((t) => {
+    const accountName = accountMap.get(t.account_id) || "Conta Desconhecida";
+    const categoryName = t.category_id
+      ? categoryMap.get(t.category_id) || "Categoria Desconhecida"
+      : "Sem Categoria";
+
+    return {
+      id: String(t.id),
+      title: t.title ?? "Sem Título",
+      amount: t.amount || 0,
+      type: t.type ?? "expense",
+      direction: t.direction === "in" || t.direction === "out" ? t.direction : "out",
+      transaction_date: t.transaction_date ?? new Date().toISOString(),
+      category_id: t.category_id !== null ? String(t.category_id) : "0",
+      account_id: String(t.account_id),
+
+      account_name: accountName,
+      category_name: categoryName,
+    } as FormattedTransaction;
+  });
+}
+
 function DraggableRow({ row }: { row: Row<z.infer<typeof schemaTransaction>> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
@@ -184,13 +241,16 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schemaTransaction>> }) 
     </TableRow>
   );
 }
-
-export function TableTransactions({
-  data: initialData,
-}: {
-  data: z.infer<typeof schemaTransaction>[];
-}) {
-  const [data, setData] = React.useState(() => initialData);
+interface TableInterface {
+  data: DbTransaction[];
+  accounts: DbAccount[];
+  categories: DbCategory[];
+}
+export function TableTransactions({ data: rawTransactions, accounts, categories }: TableInterface) {
+  const formattedData = React.useMemo(() => {
+    return mapRawData(rawTransactions, accounts, categories);
+  }, [rawTransactions, accounts, categories]);
+  const [data, setData] = React.useState(() => formattedData);
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -246,23 +306,60 @@ export function TableTransactions({
 
   return (
     <Tabs defaultValue="outline" className="w-full flex-col justify-start gap-6 mt-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-4 flex-1">
           <Input
             placeholder="Search...."
             value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
             onChange={(event) => table.getColumn("title")?.setFilterValue(event.target.value)}
-            className="max-w-sm"
           />
           <FilterSelect columnId="category_name" title="Category" table={table} />
           <FilterSelect columnId="type" title="Type" table={table} />
           <FilterSelect columnId="account_name" title="Account" table={table} />
         </div>
 
+        <div className="md:hidden">
+          <Sheet>
+            <SheetTrigger className="p-4" asChild>
+              <Button variant="outline" size="sm" className="gap-1">
+                <IconAdjustmentsHorizontal className="w-4 h-4" />
+                Filters
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="flex flex-col justify-end px-4 pb-15 [&>button]:hidden"
+            >
+              <SheetHeader className="p-0 flex flex-row justify-between items-center w-full">
+                <SheetTitle className="flex-1">Filter Transactions</SheetTitle>
+                <SheetClose className="flex justify-end px-0" asChild>
+                  <Button variant="ghost" className="p-0">
+                    <X className="w-4 h-4 p-0" />
+                  </Button>
+                </SheetClose>
+              </SheetHeader>
+              <div className="flex flex-col gap-4 w-full">
+                <Input
+                  className="flex-1"
+                  placeholder="Search...."
+                  value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+                  onChange={(event) => table.getColumn("title")?.setFilterValue(event.target.value)}
+                />
+
+                <FilterSelect columnId="category_name" title="Category" table={table} />
+                <FilterSelect columnId="type" title="Type" table={table} />
+                <FilterSelect columnId="account_name" title="Account" table={table} />
+              </div>
+
+              <SheetClose className="sheet-close-button" />
+            </SheetContent>
+          </Sheet>
+        </div>
+
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="p-2 h-auto">
                 <IconLayoutColumns />
                 <span className="hidden lg:inline">Customize Columns</span>
                 <span className="lg:hidden">Columns</span>
@@ -288,14 +385,11 @@ export function TableTransactions({
             </DropdownMenuContent>
           </DropdownMenu>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
-              <IconPlus />
-              <span className="hidden lg:inline">New Transaction</span>
-            </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="p-2 h-auto">
               <Download />
-              <span className="hidden lg:inline">Download</span>
+              <span className="hidden lg:inline ">Download</span>
             </Button>
+            <AddTransactionForm accounts={accounts ?? []} categories={categories ?? []} />
           </div>
         </div>
       </div>

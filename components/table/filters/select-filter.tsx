@@ -40,7 +40,7 @@ export function FilterSelect({
         column?.setFilterValue(value === "__all__" ? undefined : [value]);
       }}
     >
-      <SelectTrigger className="w-36">
+      <SelectTrigger className="w-full">
         <SelectValue placeholder={title} />
       </SelectTrigger>
 
