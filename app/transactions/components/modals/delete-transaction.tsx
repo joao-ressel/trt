@@ -36,8 +36,8 @@ export function DeleteTransaction({ transaction, account, closeDialog }: Transac
   return (
     <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive">
-          <Trash2 className="h-4 w-4" /> Detele
+        <Button variant="ghost">
+          <Trash2 className="h-4 w-4 text-red-500" /> Detele
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

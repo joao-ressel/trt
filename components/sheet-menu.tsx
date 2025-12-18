@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "./ui/sheet";
 import { ModeToggle } from "./mode-toggle";
 import { NavUser } from "./nav-user";
 
@@ -21,22 +21,26 @@ export function SheetMenu() {
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="left" className="p-4 flex flex-col">
+      <SheetContent side="right" className="p-4 flex flex-col w-full border-0">
         <SheetHeader className="pb-4">
           <SheetTitle asChild>
             <div className="h-12 w-28 bg-foreground mask-[url('/name-logo.svg')] mask-cover"></div>
           </SheetTitle>
         </SheetHeader>
+
         <div className="flex-1">
           <div className="flex flex-col gap-4 mt-8">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} passHref>
-                {link.label}
-              </Link>
+              <SheetClose asChild key={link.href}>
+                <Link href={link.href} className="text-lg font-medium">
+                  {link.label}
+                </Link>
+              </SheetClose>
             ))}
           </div>
         </div>
-        <div className="flex w-full justify-between pt-4 border-t">
+
+        <div className="flex w-full justify-between pt-4 border-t items-center">
           <NavUser />
           <ModeToggle />
         </div>

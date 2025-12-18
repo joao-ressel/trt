@@ -152,7 +152,7 @@ export function EditTransaction({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button variant="ghost">
           <Pencil className="h-4 w-4 " /> Edit
         </Button>
       </DialogTrigger>
@@ -307,8 +307,8 @@ export function EditTransaction({
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
-                      defaultValue={String(field.value) ?? undefined}
+                      onValueChange={(value) => field.onChange(Number(value))}
+                      defaultValue={field.value ? String(field.value) : undefined}
                     >
                       <FormControl>
                         <SelectTrigger className="w-full">

@@ -9,7 +9,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <head>
           <link rel="manifest" href="/manifest.json" />
         </head>
-        <body className="antialiased bg-background text-foreground">
+        <body className="antialiased bg-background text-foreground flex flex-col min-h-screen">
           <LayoutWrapper>{children}</LayoutWrapper>
 
           <Toaster />

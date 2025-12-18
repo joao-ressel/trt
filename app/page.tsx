@@ -22,9 +22,9 @@ export default async function Home() {
         .then((res) => res as any),
     ]);
   return (
-    <main className="w-full min-h-[calc(100vh-(var(--spacing) * 20))] p-6 space-y-6">
+    <>
       <ChartsView transactions={transactionsOriginal} categories={categories} accounts={accounts} />
-      <TableTransactions data={finalTransactions} />
-    </main>
+      <TableTransactions data={finalTransactions} accounts={accounts} categories={categories} />
+    </>
   );
 }

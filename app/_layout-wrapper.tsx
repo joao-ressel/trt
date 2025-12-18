@@ -5,7 +5,7 @@ import React from "react";
 import { usePathname } from "next/navigation";
 
 import { ThemeProvider } from "@/components/theme-provider";
-import { Header } from "@/components/header";
+import { Menu } from "@/components/menu";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -24,7 +24,9 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       {!isAuthRoute && (
         <>
-          <Header />
+          <header className="border-b">
+            <Menu />
+          </header>
           <div className="-z-10 fixed opacity-10">
             <div className="h-124.5 w-100 bg-foreground mask-[url('/lines.svg')] mask-cover"></div>
           </div>
@@ -33,7 +35,12 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
           </div>
         </>
       )}
-      {children}
+      <main className="flex-1 w-full md:p-6 space-y-6 p-4"> {children}</main>
+      {!isAuthRoute && (
+        <footer className="mb-0 mt-auto border-t">
+          <Menu />
+        </footer>
+      )}
     </ThemeProvider>
   );
 }

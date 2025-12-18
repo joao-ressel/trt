@@ -287,7 +287,7 @@ export default function AddTransactionForm({ accounts, categories }: AddTransact
                       <FormLabel>Category</FormLabel>
                       <Select
                         onValueChange={(value) => field.onChange(Number(value))}
-                        defaultValue={field.value ? String(field.value) : undefined}
+                        defaultValue={String(field.value) ?? undefined}
                       >
                         <FormControl>
                           <SelectTrigger className="w-full">

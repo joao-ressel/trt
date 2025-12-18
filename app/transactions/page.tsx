@@ -49,8 +49,8 @@ export default async function TransactionsPage() {
 
   const grouped = groupByDate(transactionsOriginal ?? []);
   return (
-    <div className="w-full min-h-[calc(100vh-(var(--spacing) * 20))] p-6 space-y-6">
-      <main className="flex w-full gap-8 md:gap-4">
+    <>
+      <div className="flex w-full gap-8 md:gap-4">
         <div className="space-y-4 w-full">
           <div className="flex w-full justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">Transactions</h2>
@@ -85,7 +85,7 @@ export default async function TransactionsPage() {
             <p className="text-foreground">No transactions found.</p>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }

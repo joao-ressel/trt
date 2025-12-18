@@ -43,7 +43,7 @@ export default async function AccountsPage() {
   const normalAccounts = accountsWithBalance.filter((a) => a.current_balance !== 0);
 
   return (
-    <div className="w-full min-h-[calc(100vh-(var(--spacing) * 20))] p-6 space-y-6">
+    <>
       <div className="space-y-4 flex flex-col h-full ">
         <div className="flex w-full justify-between mb-4 items-center ">
           <h2 className="text-2xl font-bold">Accounts</h2>
@@ -52,7 +52,7 @@ export default async function AccountsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-10 gap-4">
+        <div className="grid md:grid-cols-10 grid-cols-3 gap-4">
           {normalAccounts.map((account) => (
             <AccountListItem key={account.id} account={account} />
           ))}
@@ -62,7 +62,7 @@ export default async function AccountsPage() {
           <AccordionItem value="item-1">
             <AccordionTrigger>Show zero balance accounts</AccordionTrigger>
             <AccordionContent>
-              <div className="grid grid-cols-10 gap-4">
+              <div className="grid md:grid-cols-10 grid-cols-3 gap-4">
                 {accountsZero.map((account) => (
                   <AccountListItem key={account.id} account={account} />
                 ))}
@@ -73,6 +73,6 @@ export default async function AccountsPage() {
 
         {accountsWithBalance.length === 0 && <p className="text-foreground">No account found.</p>}
       </div>
-    </div>
+    </>
   );
 }
