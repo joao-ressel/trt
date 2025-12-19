@@ -21,6 +21,18 @@ import {
   Pill,
   Monitor,
   Pizza,
+  Volleyball,
+  Drama,
+  Package,
+  PiggyBank,
+  Handshake,
+  Motorbike,
+  Baby,
+  Hamburger,
+  Beer,
+  ShoppingBag,
+  Shirt,
+  ShoppingBasket,
 } from "lucide-react";
 
 export const ICON_OPTIONS = [
@@ -44,6 +56,18 @@ export const ICON_OPTIONS = [
   { name: "Pill", Component: Pill },
   { name: "Monitor", Component: Monitor },
   { name: "Pizza", Component: Pizza },
+  { name: "Volleyball", Component: Volleyball },
+  { name: "Drama", Component: Drama },
+  { name: "Package", Component: Package },
+  { name: "PiggyBank", Component: PiggyBank },
+  { name: "Handshake", Component: Handshake },
+  { name: "Motorbike", Component: Motorbike },
+  { name: "Baby", Component: Baby },
+  { name: "Hamburger", Component: Hamburger },
+  { name: "Beer", Component: Beer },
+  { name: "ShoppingBag", Component: ShoppingBag },
+  { name: "ShoppingBasket", Component: ShoppingBasket },
+  { name: "Shirt", Component: Shirt },
 ];
 
 export type CategoryType = "income" | "expense";
