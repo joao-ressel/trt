@@ -36,7 +36,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../ui/carousel";
-
+import { EyeClosedIcon, EyeIcon } from "@phosphor-icons/react";
+import { useState, useEffect } from "react";
+import { Button } from "../ui/button";
 export const description = "An interactive area chart";
 
 interface ChartsViewProps {
@@ -72,16 +74,19 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
   const totalAccounts = currencyFormatter.format(getAccountsTotalBalance(accounts));
   const totalExpense = currencyFormatter.format(getTotals(filteredTransactions).totalExpense);
   const totalIncome = currencyFormatter.format(getTotals(filteredTransactions).totalIncome);
-  console.log("timelineData", timelineData);
-  console.log("transactions", transactions.length);
-  console.log("selectedPeriod", selectedPeriod);
-  console.log("typeSelected", selectedType);
+  const [showExpense, setShowExpense] = useState(false);
+  const [showTotal, setShowTotal] = useState(false);
+  const [showIncome, setShowIncome] = useState(false);
+  const [hideChartValues, setHideChartValues] = useState(true);
 
-  console.log("timelineData", timelineData.length);
-  const [api, setApi] = React.useState<CarouselApi>();
-  const [current, setCurrent] = React.useState(0);
-  const [count, setCount] = React.useState(0);
-  React.useEffect(() => {
+  const [mounted, setMounted] = useState(false);
+
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
     if (!api) {
       return;
     }
@@ -96,21 +101,70 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
 
   return (
     <div className="flex flex-col gap-4 m-0 w-full z-1">
-      <div className="w-full h-full flex gap-6 items-center justify-center">
-        <div className="w-full h-full flex flex-row justify-between md:gap-4 gap-2 text-center">
+      <div className="w-full flex gap-6 items-center justify-center">
+        <div className="w-full flex flex-row justify-between md:gap-4 gap-2 text-center">
           {(selectedType === "expense" || selectedType === "all") && (
-            <Card className="text-center self-center  border border-border gap-1 h-fit p-2  w-full">
-              <span className="text-lg font-bold text-red-500">{totalExpense}</span>
+            <Card className="relative text-center self-center border border-border gap-1 h-fit p-2 w-full">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowExpense((prev) => !prev);
+                }}
+                className="absolute top-2 right-2 text-muted-foreground hover:text-primary z-100"
+              >
+                {showExpense ? <EyeClosedIcon size={18} /> : <EyeIcon size={18} />}
+              </Button>
+
+              <span
+                className={`text-lg font-bold text-red-500 transition-all ${
+                  showExpense ? "" : "blur-sm select-none"
+                }`}
+              >
+                {totalExpense}
+              </span>
+
               <p className="text-sm text-secondary-foreground">Expense</p>
             </Card>
           )}
-          <Card className="text-center self-center border border-border gap-1 h-fit p-2  w-full">
-            <span className="text-lg font-bold text-blue-500">{totalAccounts}</span>
+
+          <Card className="relative text-center self-center border border-border gap-1 h-fit p-2 w-full">
+            <Button
+              variant="ghost"
+              onClick={() => setShowTotal((prev) => !prev)}
+              className="absolute top-2 right-2 text-muted-foreground hover:text-primary z-100"
+            >
+              {showTotal ? <EyeClosedIcon size={18} /> : <EyeIcon size={18} />}
+            </Button>
+
+            <span
+              className={`text-lg font-bold text-blue-500 transition-all ${
+                showTotal ? "" : "blur-sm select-none"
+              }`}
+            >
+              {totalAccounts}
+            </span>
+
             <p className="text-sm text-secondary-foreground">Total</p>
           </Card>
+
           {(selectedType === "income" || selectedType === "all") && (
-            <Card className="text-center self-center  border border-border gap-1 h-fit p-2  w-full">
-              <span className="text-lg font-bold text-green-500">{totalIncome}</span>
+            <Card className="relative text-center self-center border border-border gap-1 h-fit p-2 w-full">
+              <Button
+                variant="ghost"
+                onClick={() => setShowIncome((prev) => !prev)}
+                className="absolute top-2 right-2 text-muted-foreground hover:text-primary z-100"
+              >
+                {showIncome ? <EyeClosedIcon size={18} /> : <EyeIcon size={18} />}
+              </Button>
+
+              <span
+                className={`text-lg font-bold text-green-500 transition-all ${
+                  showIncome ? "" : "blur-sm select-none"
+                }`}
+              >
+                {totalIncome}
+              </span>
+
               <p className="text-sm text-secondary-foreground">Income</p>
             </Card>
           )}
@@ -119,7 +173,7 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
 
       <Card className="@container/card p-0 m-0 border-border w-full">
         <CardHeader className="w-full flex justify-center md:gap-4 gap-2 p-3 m-0 flex-col md:flex-row">
-          <CardAction className="self-center h-full w-full flex md:w-auto">
+          <CardAction className="self-center  w-full flex md:w-auto">
             <ToggleGroup
               type="single"
               value={selectedType}
@@ -160,7 +214,7 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
             </Select>
           </CardAction>
 
-          <CardAction className="self-center h-full w-full flex md:w-auto">
+          <CardAction className="self-center  w-full flex md:w-auto">
             <ToggleGroup
               type="single"
               value={selectedPeriod}
@@ -200,53 +254,78 @@ export function ChartsView({ transactions, categories, accounts }: ChartsViewPro
               </SelectContent>
             </Select>
           </CardAction>
+          <CardAction className="self-center  w-full flex md:w-auto">
+            <Button
+              variant="ghost"
+              onClick={() => setHideChartValues((prev) => !prev)}
+              className="text-muted-foreground hover:text-primary"
+            >
+              {hideChartValues ? <EyeIcon size={18} /> : <EyeClosedIcon size={18} />}
+            </Button>
+          </CardAction>
         </CardHeader>
-
         <CardContent className=" gap-4 p-3 w-full hidden md:flex">
-          <ChartTransactionsByCategory
-            data={chartDataByCategory.data}
-            categories={categories}
-            typeSelected={selectedType}
-            selectedPeriod={selectedPeriod}
-          />
-
-          <ChartTop5Days
-            categories={categories}
-            transactions={transactions}
-            selectedPeriod={selectedPeriod}
-            typeSelected={selectedType}
-          />
-
-          <ChartTimelineCategories
-            typeSelected={selectedType}
-            data={timelineData}
-            categories={categories}
-          />
+          {mounted && (
+            <ChartTransactionsByCategory
+              data={chartDataByCategory.data}
+              categories={categories}
+              typeSelected={selectedType}
+              selectedPeriod={selectedPeriod}
+              hideChartValues={hideChartValues}
+            />
+          )}
+          {mounted && (
+            <ChartTop5Days
+              categories={categories}
+              transactions={transactions}
+              selectedPeriod={selectedPeriod}
+              typeSelected={selectedType}
+              hideChartValues={hideChartValues}
+            />
+          )}
+          {mounted && (
+            <ChartTimelineCategories
+              typeSelected={selectedType}
+              data={timelineData}
+              categories={categories}
+              hideChartValues={hideChartValues}
+            />
+          )}
         </CardContent>
+
         <Carousel setApi={setApi} className="flex md:hidden gap-4 p-3 w-full ">
           <CarouselContent>
             <CarouselItem>
-              <ChartTransactionsByCategory
-                data={chartDataByCategory.data}
-                categories={categories}
-                typeSelected={selectedType}
-                selectedPeriod={selectedPeriod}
-              />
+              {mounted && (
+                <ChartTransactionsByCategory
+                  data={chartDataByCategory.data}
+                  categories={categories}
+                  typeSelected={selectedType}
+                  selectedPeriod={selectedPeriod}
+                  hideChartValues={hideChartValues}
+                />
+              )}
             </CarouselItem>
             <CarouselItem>
-              <ChartTop5Days
-                categories={categories}
-                transactions={transactions}
-                selectedPeriod={selectedPeriod}
-                typeSelected={selectedType}
-              />
+              {mounted && (
+                <ChartTop5Days
+                  categories={categories}
+                  transactions={transactions}
+                  selectedPeriod={selectedPeriod}
+                  typeSelected={selectedType}
+                  hideChartValues={hideChartValues}
+                />
+              )}
             </CarouselItem>
             <CarouselItem>
-              <ChartTimelineCategories
-                typeSelected={selectedType}
-                data={timelineData}
-                categories={categories}
-              />
+              {mounted && (
+                <ChartTimelineCategories
+                  typeSelected={selectedType}
+                  data={timelineData}
+                  categories={categories}
+                  hideChartValues={hideChartValues}
+                />
+              )}
             </CarouselItem>
           </CarouselContent>
           <CarouselPrevious variant="default" className="left-5 rounded-md bottom-0" />

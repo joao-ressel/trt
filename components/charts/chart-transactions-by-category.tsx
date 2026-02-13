@@ -24,12 +24,14 @@ interface ChartCategoryProps {
   categories: DbCategory[];
   selectedPeriod: FilterPeriod;
   typeSelected: FilterTransactionType;
+  hideChartValues: boolean;
 }
 
 export function ChartTransactionsByCategory({
   data,
   categories,
   typeSelected,
+  hideChartValues,
 }: ChartCategoryProps) {
   const [timeRange, setTimeRange] = React.useState("30d");
 
@@ -66,7 +68,7 @@ export function ChartTransactionsByCategory({
 
   const pagedData = dataWithColor.slice(
     currentPage * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE + ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE + ITEMS_PER_PAGE,
   );
 
   const goToNextPage = () => {
@@ -100,6 +102,7 @@ export function ChartTransactionsByCategory({
                   labelMapper={(item: any) => item?.label ?? ""}
                   valueMapper={(item: any) => Number(item?.amount ?? 0).toFixed(2)}
                   colorMapper={(item: any) => item?.color ?? "#ccc"}
+                  showValues={hideChartValues}
                 />
               )}
             />
@@ -120,22 +123,23 @@ export function ChartTransactionsByCategory({
               {pagedData.map((entry, index) => (
                 <Cell key={index} fill={entry.color} />
               ))}
-
-              <LabelList
-                dataKey="amount"
-                position="right"
-                className="fill-foreground"
-                fontSize={12}
-                formatter={(value: number) => {
-                  const v = typeof value === "number" ? value : Number(value);
-                  return v.toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  });
-                }}
-              />
+              {!hideChartValues && (
+                <LabelList
+                  dataKey="amount"
+                  position="right"
+                  className="fill-foreground"
+                  fontSize={12}
+                  formatter={(value: number) => {
+                    const v = typeof value === "number" ? value : Number(value);
+                    return v.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    });
+                  }}
+                />
+              )}
             </Bar>
           </BarChart>
         </ChartContainer>

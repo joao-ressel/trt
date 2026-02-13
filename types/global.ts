@@ -20,4 +20,5 @@ export interface PropsFilters {
   transactions: DbTransaction[];
   typeSelected: FilterTransactionType;
   selectedPeriod: FilterPeriod;
+  hideChartValues: boolean;
 }

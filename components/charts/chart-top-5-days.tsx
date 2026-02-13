@@ -15,6 +15,7 @@ export function ChartTop5Days({
   categories,
   selectedPeriod,
   typeSelected,
+  hideChartValues,
 }: PropsFilters) {
   const chartConfig = buildChartConfig(categories);
 
@@ -58,6 +59,7 @@ export function ChartTop5Days({
                 labelMapper={(item: any) => item.label}
                 valueMapper={(item: any) => Number(item?.amount ?? 0).toFixed(2)}
                 colorMapper={(item) => item.color}
+                showValues={hideChartValues}
               />
             )}
           />
@@ -66,23 +68,24 @@ export function ChartTop5Days({
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
+            {!hideChartValues && (
+              <LabelList
+                position="top"
+                offset={12}
+                className="fill-foreground"
+                fontSize={12}
+                formatter={(value: number) => {
+                  const numericValue = typeof value === "number" ? value : parseFloat(value);
 
-            <LabelList
-              position="top"
-              offset={12}
-              className="fill-foreground"
-              fontSize={12}
-              formatter={(value: number) => {
-                const numericValue = typeof value === "number" ? value : parseFloat(value);
-
-                return numericValue.toLocaleString("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                });
-              }}
-            />
+                  return numericValue.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  });
+                }}
+              />
+            )}
           </Bar>
         </BarChart>
       </ChartContainer>

@@ -17,6 +17,7 @@ import { DeleteAccount } from "./modals/delete-account";
 
 interface AccountListItemProps {
   account: DbAccount;
+  showBalance: boolean;
 }
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -24,7 +25,7 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-export default function AccountListItem({ account }: AccountListItemProps) {
+export default function AccountListItem({ account, showBalance }: AccountListItemProps) {
   const [open, setOpen] = useState(false);
   const balanceToFormat = account.current_balance ?? 0;
   const formattedCurrent = currencyFormatter.format(balanceToFormat);
@@ -56,7 +57,13 @@ export default function AccountListItem({ account }: AccountListItemProps) {
           </div>
 
           <div className="flex flex-col items-center gap-4 p-3">
-            <span className={`font-semibold ${balanceClass}`}>{formattedCurrent}</span>
+            <span
+              className={`font-semibold transition-all ${
+                showBalance ? balanceClass : "blur-sm select-none"
+              }`}
+            >
+              {formattedCurrent}
+            </span>
           </div>
         </div>
       </DialogTrigger>

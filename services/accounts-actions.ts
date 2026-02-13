@@ -58,7 +58,6 @@ export async function updateAccount(accountId: number, formData: Partial<DbAccou
 }
 
 export async function deleteAccount(accountId: number) {
-  console.log("ID recebido:", accountId);
   const supabase = await createClient();
   const { error } = await supabase.from("accounts").delete().eq("id", accountId);
 

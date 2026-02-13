@@ -234,12 +234,12 @@ export function TableTransactions({ data, accounts, categories }: TableTransacti
   const sensors = useSensors(
     useSensor(MouseSensor),
     useSensor(TouchSensor),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => tableData.map((row) => row.id),
-    [tableData]
+    [tableData],
   );
 
   const columns = React.useMemo(() => getColumns({ accounts, categories }), [accounts, categories]);
@@ -400,15 +400,8 @@ export function TableTransactions({ data, accounts, categories }: TableTransacti
             </Table>
           </DndContext>
         </div>
-        <div className="flex items-center justify-between px-4">
-          <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
+        <div className="flex items-center justify-center px-4">
           <div className="flex w-full items-center gap-8 lg:w-fit">
-            <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-            </div>
             <div className="ml-auto flex items-center gap-2 lg:ml-0">
               <Button
                 variant="outline"
@@ -427,6 +420,9 @@ export function TableTransactions({ data, accounts, categories }: TableTransacti
               >
                 <span className="sr-only">Go to previous page</span> <IconChevronLeft />
               </Button>
+              <div className="flex w-fit items-center justify-center text-sm font-medium">
+                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              </div>
               <Button
                 variant="outline"
                 className="size-8"

@@ -16,7 +16,9 @@ interface CustomTooltipProps<T> extends RechartsTooltipProps {
   labelMapper: DataMapper<T>;
   valueMapper: DataMapper<T>;
   colorMapper: DataMapper<T>;
+  showValues: boolean;
 }
+
 interface RechartsTooltipProps {
   active?: boolean;
   payload?: any[];
@@ -28,11 +30,11 @@ export const CustomTooltipContent = <T extends unknown>({
   labelMapper,
   valueMapper,
   colorMapper,
+  showValues,
 }: CustomTooltipProps<T>) => {
   if (!active || !payload || !payload.length) return null;
 
   const day = payload[0].payload as any;
-
   if (!day?.items) return null;
 
   return (
@@ -55,8 +57,10 @@ export const CustomTooltipContent = <T extends unknown>({
             />
 
             <span className="text-muted-foreground">
-              {categoryName}:{" "}
-              <span className="ml-1 font-semibold text-foreground">R$ {amount}</span>
+              {categoryName}:
+              <span className="ml-1 font-semibold text-foreground">
+                {showValues ? `R$ ${amount}` : "••••"}
+              </span>
             </span>
           </div>
         );

@@ -10,10 +10,12 @@ export function ChartTimelineCategories({
   data,
   categories,
   typeSelected,
+  hideChartValues,
 }: {
   data: any[];
   categories: DbCategory[];
   typeSelected: FilterTransactionType;
+  hideChartValues: boolean;
 }) {
   const chartConfig = buildChartConfig(categories);
 
@@ -36,6 +38,7 @@ export function ChartTimelineCategories({
                 labelMapper={(item: any) => item.label}
                 valueMapper={(item: any) => Number(item?.amount ?? 0).toFixed(2)}
                 colorMapper={(item: any) => item.color}
+                showValues={hideChartValues}
               />
             )}
           />
@@ -48,8 +51,8 @@ export function ChartTimelineCategories({
 
               const dominantColor =
                 payload.items && payload.items.length > 0
-                  ? chartConfig[payload.items[0].category_id || ""]?.color ??
-                    "var(--secondary-foreground)"
+                  ? (chartConfig[payload.items[0].category_id || ""]?.color ??
+                    "var(--secondary-foreground)")
                   : "var(--secondary-foreground)";
 
               return (
