@@ -64,7 +64,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "baseline-browser-mapping": "^2.8.32",
-    "build": "^0.1.4",
     "eslint": "^9",
     "eslint-config-next": "^16.0.10",
     "next": "^16.0.10",
